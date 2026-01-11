@@ -1,37 +1,64 @@
 body {
     font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
-    -webkit-tap-highlight-color: transparent;
-    overscroll-behavior-y: contain;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Aggressively hide spin-buttons for Chrome, Safari, Edge, Opera */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-    -webkit-appearance: none !important;
-    margin: 0 !important;
+/* Custom animations */
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* Hide spin-buttons for Firefox */
-input[type=number] {
-    -moz-appearance: textfield !important;
+.animate-fade-in {
+    animation: fade-in 0.4s ease-out forwards;
 }
 
+/* Utility to hide/show with transition */
 .hidden {
-    display: none;
+    display: none !important;
 }
 
-#result-container:not(.hidden) {
-    animation: fadeIn 0.3s ease-out;
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95) translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.2);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.4);
+}
+
+/* Smooth input transitions */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Tooltip animation */
+.animate-in {
+    animation-duration: 0.2s;
+    animation-fill-mode: forwards;
+}
+
+.fade-in {
+    animation-name: fade-in;
+}
+
+.zoom-in {
+    transform: scale(0.95);
+    transition: transform 0.2s ease-out;
+}
+
+.zoom-in:hover {
+    transform: scale(1);
 }

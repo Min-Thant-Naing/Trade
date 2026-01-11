@@ -1,48 +1,41 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-// --- Types & Constants ---
-enum MarketSymbol {
-  SP1 = 'SP1!',
-  NQ1 = 'NQ1!'
-}
-
-interface HistoryItem {
-  mode: MarketSymbol;
-  point: number;
-  result: number;
-  timestamp: number;
-}
+// --- Constants ---
+const MarketSymbol = {
+  SP1: 'SP1!',
+  NQ1: 'NQ1!'
+};
 
 // --- State Management ---
-let currentSymbol: MarketSymbol = MarketSymbol.SP1;
+let currentSymbol = MarketSymbol.SP1;
 let isLoading = false;
-let history: HistoryItem[] = JSON.parse(localStorage.getItem('trading_calc_history') || '[]');
+let history = JSON.parse(localStorage.getItem('trading_calc_history') || '[]');
 
 // --- Initialize Gemini API ---
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 // --- DOM References ---
-const btnSP1 = document.getElementById('btn-sp1') as HTMLButtonElement;
-const btnNQ1 = document.getElementById('btn-nq1') as HTMLButtonElement;
-const pointsInput = document.getElementById('points') as HTMLInputElement;
-const calculateBtn = document.getElementById('calculate-btn') as HTMLButtonElement;
-const resultsArea = document.getElementById('results-area') as HTMLDivElement;
-const resultValue = document.getElementById('result-value') as HTMLDivElement;
-const btnText = document.getElementById('btn-text') as HTMLSpanElement;
-const btnSpinner = document.getElementById('btn-spinner') as HTMLDivElement;
-const infoBtn = document.getElementById('info-btn') as HTMLButtonElement;
-const infoTooltip = document.getElementById('info-tooltip') as HTMLDivElement;
-const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
-const copyText = document.getElementById('copy-text') as HTMLSpanElement;
-const historyContainer = document.getElementById('history-container') as HTMLDivElement;
+const btnSP1 = document.getElementById('btn-sp1');
+const btnNQ1 = document.getElementById('btn-nq1');
+const pointsInput = document.getElementById('points');
+const calculateBtn = document.getElementById('calculate-btn');
+const resultsArea = document.getElementById('results-area');
+const resultValue = document.getElementById('result-value');
+const btnText = document.getElementById('btn-text');
+const btnSpinner = document.getElementById('btn-spinner');
+const infoBtn = document.getElementById('info-btn');
+const infoTooltip = document.getElementById('info-tooltip');
+const copyBtn = document.getElementById('copy-btn');
+const copyText = document.getElementById('copy-text');
+const historyContainer = document.getElementById('history-container');
 
-const insightText = document.getElementById('insight-text') as HTMLParagraphElement;
-const sentimentBadge = document.getElementById('sentiment-badge') as HTMLSpanElement;
-const sourcesContainer = document.getElementById('sources-container') as HTMLDivElement;
+const insightText = document.getElementById('insight-text');
+const sentimentBadge = document.getElementById('sentiment-badge');
+const sourcesContainer = document.getElementById('sources-container');
 
 // --- Functions ---
 
-function updateSymbolUI(symbol: MarketSymbol) {
+function updateSymbolUI(symbol) {
   currentSymbol = symbol;
   const activeClass = "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]";
   const inactiveClass = "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
@@ -79,7 +72,7 @@ function renderHistory() {
   });
 }
 
-async function fetchAIInsight(symbol: MarketSymbol, points: number) {
+async function fetchAIInsight(symbol, points) {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -98,7 +91,8 @@ async function fetchAIInsight(symbol: MarketSymbol, points: number) {
       }
     });
 
-    const data = JSON.parse(response.text || '{"content": "Insights unavailable.", "sentiment": "neutral"}');
+    const text = response.text || '{"content": "Insights unavailable.", "sentiment": "neutral"}';
+    const data = JSON.parse(text);
     
     insightText.textContent = data.content;
     sentimentBadge.textContent = data.sentiment;
@@ -111,7 +105,7 @@ async function fetchAIInsight(symbol: MarketSymbol, points: number) {
     sourcesContainer.innerHTML = '';
     const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
     if (chunks && chunks.length > 0) {
-      chunks.forEach((chunk: any) => {
+      chunks.forEach((chunk) => {
         if (chunk.web) {
           const link = document.createElement('a');
           link.href = chunk.web.uri;
@@ -138,7 +132,7 @@ async function handleCalculate() {
   btnText.classList.add('hidden');
   btnSpinner.classList.remove('hidden');
 
-  // NEW FORMULA Logic from user snippet
+  // FORMULA:
   // SP1: 500 / (p * 102)
   // NQ1: 500 / (p * 79.52)
   const calculatedValue = currentSymbol === MarketSymbol.SP1 ? 500 / (p * 102) : 500 / (p * 79.52);

@@ -140,4 +140,17 @@ btnClearHistory.addEventListener('click', () => {
     }
 });
 
+const infoBtn = document.getElementById("info-btn");
+const infoTooltip = document.getElementById("info-tooltip");
+
+infoBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  infoTooltip.classList.toggle("hidden");
+});
+
+// Close when clicking outside
+document.addEventListener("click", () => {
+  infoTooltip.classList.add("hidden");
+});
+
 init();

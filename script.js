@@ -140,4 +140,31 @@ btnClearHistory.addEventListener('click', () => {
     }
 });
 
+// --- Event Listeners ---
+
+btnSP1.addEventListener('click', () => updateSymbolUI(MarketSymbol.SP1));
+btnNQ1.addEventListener('click', () => updateSymbolUI(MarketSymbol.NQ1));
+
+calculateBtn.addEventListener('click', handleCalculate);
+
+pointsInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleCalculate();
+});
+
+infoBtn.addEventListener('mouseenter', () => infoTooltip.classList.remove('hidden'));
+infoBtn.addEventListener('mouseleave', () => infoTooltip.classList.add('hidden'));
+
+copyBtn.addEventListener('click', async () => {
+  const value = resultValue.textContent || '';
+  try {
+    await navigator.clipboard.writeText(value);
+    copyText.textContent = "Copied!";
+    setTimeout(() => {
+      copyText.textContent = "Copy to Clipboard";
+    }, 2000);
+  } catch (err) {
+    console.error('Failed to copy', err);
+  }
+});
+
 init();

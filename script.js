@@ -14,8 +14,6 @@ const textCopy = document.getElementById('copy-text');
 const sectionHistory = document.getElementById('history-section');
 const listHistory = document.getElementById('history-list');
 const btnClearHistory = document.getElementById('clear-history');
-const infoBtn = document.getElementById('info-btn');
-const infoTooltip = document.getElementById('info-tooltip');
 
 // Load Data
 function init() {
@@ -140,18 +138,6 @@ btnClearHistory.addEventListener('click', () => {
         localStorage.removeItem('trading_calc_history_v2');
         renderHistory();
     }
-});
-
-infoBtn.addEventListener('click', (e) => {
-    e.stopPropagation(); // Prevent hiding immediately
-    infoTooltip.classList.toggle('invisible');
-    infoTooltip.classList.toggle('opacity-0');
-});
-
-// Hide tooltip if clicking outside
-document.addEventListener('click', () => {
-    infoTooltip.classList.add('invisible');
-    infoTooltip.classList.add('opacity-0');
 });
 
 init();

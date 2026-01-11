@@ -10,32 +10,30 @@ const historyContainer = document.getElementById('historyContainer');
 let mode = 'SP1';
 let history = JSON.parse(localStorage.getItem('trading_calc_history') || '[]');
 
+// Update toggle buttons
 function updateModeButtons() {
-  sp1Btn.classList.toggle('bg-white', mode === 'SP1');
-  nq1Btn.classList.toggle('bg-white', mode === 'NQ1');
+  sp1Btn.classList.toggle('bg-white', mode==='SP1');
+  sp1Btn.classList.toggle('dark:bg-slate-800', mode==='SP1');
+  nq1Btn.classList.toggle('bg-white', mode==='NQ1');
+  nq1Btn.classList.toggle('dark:bg-slate-800', mode==='NQ1');
 }
 updateModeButtons();
 
-sp1Btn.addEventListener('click', () => {
-  mode = 'SP1';
-  updateModeButtons();
-});
+// Toggle mode
+sp1Btn.addEventListener('click', ()=>{ mode='SP1'; updateModeButtons(); });
+nq1Btn.addEventListener('click', ()=>{ mode='NQ1'; updateModeButtons(); });
 
-nq1Btn.addEventListener('click', () => {
-  mode = 'NQ1';
-  updateModeButtons();
-});
-
-function renderHistory() {
-  historyContainer.innerHTML = '';
-  history.forEach((item, idx) => {
+// Render history
+function renderHistory(){
+  historyContainer.innerHTML='';
+  history.forEach((item)=>{
     const div = document.createElement('div');
-    div.className = 'bg-white dark:bg-slate-900/50 p-5 rounded-2xl flex justify-between items-center text-sm border border-slate-200 dark:border-white/5 border-l-4 border-l-indigo-600 shadow-md transition-all hover:translate-x-1 hover:shadow-lg';
-    div.innerHTML = `
+    div.className='bg-white dark:bg-slate-900/50 p-5 rounded-2xl flex justify-between items-center text-sm border border-slate-200 dark:border-white/5 border-l-4 border-l-indigo-600 shadow-md transition-all hover:translate-x-1 hover:shadow-lg';
+    div.innerHTML=`
       <div class="flex flex-col">
         <div class="flex items-center space-x-2 mb-1.5">
           <span class="px-2 py-0.5 rounded-md text-[9px] font-black ${item.mode==='SP1'?'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300':'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'}">${item.mode}</span>
-          <span class="text-[8px] text-slate-400 font-medium">${new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          <span class="text-[8px] text-slate-400 font-medium">${new Date(item.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
         </div>
         <span class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-tighter">Pt: <span class="text-slate-900 dark:text-slate-100">${item.point}</span></span>
       </div>
@@ -46,24 +44,23 @@ function renderHistory() {
 }
 renderHistory();
 
-calculateBtn.addEventListener('click', () => {
-  const p = parseFloat(pointsInput.value);
-  if (isNaN(p) || p === 0) return;
-
-  let calculatedValue = mode === 'SP1' ? 500 / (p * 102) : 500 / (p * 79.52);
-  resultValue.textContent = calculatedValue.toFixed(1);
+// Calculate
+calculateBtn.addEventListener('click', ()=>{
+  const p=parseFloat(pointsInput.value);
+  if(isNaN(p)||p===0) return;
+  const calculatedValue = mode==='SP1'?500/(p*102):500/(p*79.52);
+  resultValue.textContent=calculatedValue.toFixed(1);
   resultContainer.classList.remove('hidden');
-
-  const newResult = { mode, point: p, result: calculatedValue, timestamp: new Date() };
-  history.unshift(newResult);
-  history = history.slice(0,10);
-  localStorage.setItem('trading_calc_history', JSON.stringify(history));
+  history.unshift({mode,point:p,result:calculatedValue,timestamp:new Date()});
+  history=history.slice(0,10);
+  localStorage.setItem('trading_calc_history',JSON.stringify(history));
   renderHistory();
 });
 
-copyBtn.addEventListener('click', () => {
-  if (!resultValue.textContent) return;
+// Copy
+copyBtn.addEventListener('click', ()=>{
+  if(!resultValue.textContent) return;
   navigator.clipboard.writeText(resultValue.textContent);
-  copyBtn.textContent = 'Copied!';
-  setTimeout(() => copyBtn.textContent = 'Copy to Clipboard', 2000);
+  copyBtn.textContent='Copied!';
+  setTimeout(()=>copyBtn.textContent='Copy to Clipboard',2000);
 });

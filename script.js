@@ -143,13 +143,15 @@ btnClearHistory.addEventListener('click', () => {
 });
 
 infoBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    infoTooltip.classList.toggle('hidden');
+    e.stopPropagation(); // Prevent hiding immediately
+    infoTooltip.classList.toggle('invisible');
+    infoTooltip.classList.toggle('opacity-0');
 });
 
-// Close when clicking outside
+// Hide tooltip if clicking outside
 document.addEventListener('click', () => {
-    infoTooltip.classList.add('hidden');
+    infoTooltip.classList.add('invisible');
+    infoTooltip.classList.add('opacity-0');
 });
 
 init();

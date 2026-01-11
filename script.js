@@ -1,156 +1,204 @@
-// Trading PrecisionCalc Logic
-let currentMode = 'SP1!';
-let calcHistory = [];
+import { GoogleGenAI, Type } from "@google/genai";
 
-// DOM Elements
-const inputPoints = document.getElementById('points');
-const btnSP1 = document.getElementById('btn-sp1');
-const btnNQ1 = document.getElementById('btn-nq1');
-const btnCalculate = document.getElementById('calculate-btn');
-const containerResult = document.getElementById('result-container');
-const valueResult = document.getElementById('result-value');
-const btnCopy = document.getElementById('copy-btn');
-const textCopy = document.getElementById('copy-text');
-const sectionHistory = document.getElementById('history-section');
-const listHistory = document.getElementById('history-list');
-const btnClearHistory = document.getElementById('clear-history');
-
-// Load Data
-function init() {
-    const saved = localStorage.getItem('trading_calc_history_v2');
-    if (saved) {
-        calcHistory = JSON.parse(saved);
-        renderHistory();
-    }
-    if (inputPoints) {
-        inputPoints.focus();
-    }
+// --- Types & Constants ---
+enum MarketSymbol {
+  SP1 = 'SP1!',
+  NQ1 = 'NQ1!'
 }
 
-function updateModeUI() {
-    const activeClass = "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]";
-    const inactiveClass = "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
-
-    if (currentMode === 'SP1!') {
-        btnSP1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnNQ1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
-    } else {
-        btnNQ1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnSP1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
-    }
-    containerResult.classList.add('hidden');
+interface HistoryItem {
+  mode: MarketSymbol;
+  point: number;
+  result: number;
+  timestamp: number;
 }
 
-function calculate() {
-    const p = parseFloat(inputPoints.value);
-    if (isNaN(p) || p <= 0) {
-        alert("Please enter a valid point value.");
-        return;
-    }
+// --- State Management ---
+let currentSymbol: MarketSymbol = MarketSymbol.SP1;
+let isLoading = false;
+let history: HistoryItem[] = JSON.parse(localStorage.getItem('trading_calc_history') || '[]');
 
-    let result;
-    if (currentMode === 'SP1!') {
-        result = 500 / (p * 102);
-    } else {
-        result = 500 / (p * 79.52);
-    }
+// --- Initialize Gemini API ---
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
-    // Display Result
-    valueResult.textContent = result.toFixed(1);
-    containerResult.classList.remove('hidden');
+// --- DOM References ---
+const btnSP1 = document.getElementById('btn-sp1') as HTMLButtonElement;
+const btnNQ1 = document.getElementById('btn-nq1') as HTMLButtonElement;
+const pointsInput = document.getElementById('points') as HTMLInputElement;
+const calculateBtn = document.getElementById('calculate-btn') as HTMLButtonElement;
+const resultsArea = document.getElementById('results-area') as HTMLDivElement;
+const resultValue = document.getElementById('result-value') as HTMLDivElement;
+const btnText = document.getElementById('btn-text') as HTMLSpanElement;
+const btnSpinner = document.getElementById('btn-spinner') as HTMLDivElement;
+const infoBtn = document.getElementById('info-btn') as HTMLButtonElement;
+const infoTooltip = document.getElementById('info-tooltip') as HTMLDivElement;
+const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
+const copyText = document.getElementById('copy-text') as HTMLSpanElement;
+const historyContainer = document.getElementById('history-container') as HTMLDivElement;
 
-    // Add to History
-    const entry = {
-        mode: currentMode,
-        point: p,
-        result: result,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
+const insightText = document.getElementById('insight-text') as HTMLParagraphElement;
+const sentimentBadge = document.getElementById('sentiment-badge') as HTMLSpanElement;
+const sourcesContainer = document.getElementById('sources-container') as HTMLDivElement;
 
-    calcHistory = [entry, ...calcHistory].slice(0, 10);
-    localStorage.setItem('trading_calc_history_v2', JSON.stringify(calcHistory));
-    renderHistory();
+// --- Functions ---
 
-    // Reset copy button
-    textCopy.textContent = "Copy to Clipboard";
-    btnCopy.classList.remove('bg-emerald-500', 'text-white');
+function updateSymbolUI(symbol: MarketSymbol) {
+  currentSymbol = symbol;
+  const activeClass = "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]";
+  const inactiveClass = "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
+
+  if (symbol === MarketSymbol.SP1) {
+    btnSP1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeClass}`;
+    btnNQ1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${inactiveClass}`;
+  } else {
+    btnNQ1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeClass}`;
+    btnSP1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${inactiveClass}`;
+  }
 }
 
 function renderHistory() {
-    if (calcHistory.length === 0) {
-        sectionHistory.classList.add('hidden');
-        return;
-    }
+  historyContainer.innerHTML = '';
+  history.forEach((item) => {
+    const div = document.createElement('div');
+    div.className = 'bg-white dark:bg-slate-900/50 p-4 rounded-2xl flex justify-between items-center text-sm border border-slate-200 dark:border-white/5 border-l-4 border-l-indigo-600 shadow-md transition-all hover:translate-x-1 hover:shadow-lg animate-in fade-in slide-in-from-left-2';
+    
+    const timeStr = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const isSP1 = item.mode === MarketSymbol.SP1;
 
-    sectionHistory.classList.remove('hidden');
-    listHistory.innerHTML = calcHistory.map((item) => `
-      <div class="bg-white dark:bg-slate-900/50 p-5 rounded-2xl flex justify-between items-center text-sm border border-slate-200 dark:border-white/5 border-l-4 border-l-indigo-600 shadow-md transition-all hover:translate-x-1 hover:shadow-lg">
-        <div class="flex flex-col">
-          <div class="flex items-center space-x-2 mb-1.5">
-            <span class="px-2 py-0.5 rounded-md text-[9px] font-black ${item.mode === 'SP1!' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'}">
-              ${item.mode}
-            </span>
-            <span class="text-[8px] text-slate-400 font-medium">${item.timestamp}</span>
-          </div>
-          <span class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-tighter">Pt: <span class="text-slate-900 dark:text-slate-100">${item.point}</span></span>
+    div.innerHTML = `
+      <div class="flex flex-col">
+        <div class="flex items-center space-x-2 mb-1">
+          <span class="px-2 py-0.5 rounded-md text-[9px] font-black ${isSP1 ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'}">${item.mode}</span>
+          <span class="text-[8px] text-slate-400 font-medium uppercase tracking-tighter">${timeStr}</span>
         </div>
-        <div class="font-black text-indigo-600 dark:text-indigo-400 text-2xl tabular-nums">
-          ${item.result.toFixed(1)}
-        </div>
+        <span class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-tighter">Entry SL: <span class="text-slate-900 dark:text-slate-100">${item.point} pts</span></span>
       </div>
-    `).join('');
+      <div class="font-black text-indigo-600 dark:text-indigo-400 text-2xl tabular-nums">${item.result.toFixed(1)}</div>
+    `;
+    historyContainer.appendChild(div);
+  });
 }
 
-// Event Listeners
-btnSP1.addEventListener('click', () => {
-    currentMode = 'SP1!';
-    updateModeUI();
-    inputPoints.focus();
-});
-
-btnNQ1.addEventListener('click', () => {
-    currentMode = 'NQ1!';
-    updateModeUI();
-    inputPoints.focus();
-});
-
-btnCalculate.addEventListener('click', calculate);
-
-inputPoints.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') calculate();
-});
-
-btnCopy.addEventListener('click', () => {
-    const val = valueResult.textContent;
-    navigator.clipboard.writeText(val).then(() => {
-        textCopy.textContent = "Copied!";
-        btnCopy.classList.add('bg-emerald-500', 'text-white');
-        setTimeout(() => {
-            textCopy.textContent = "Copy to Clipboard";
-            btnCopy.classList.remove('bg-emerald-500', 'text-white');
-        }, 2000);
+async function fetchAIInsight(symbol: MarketSymbol, points: number) {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Current market sentiment and quick technical analysis for ${symbol} regarding a ${points} point move. Be extremely concise.`,
+      config: {
+        tools: [{ googleSearch: {} }],
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            content: { type: Type.STRING, description: "One sentence insight." },
+            sentiment: { type: Type.STRING, enum: ["bullish", "bearish", "neutral"] }
+          },
+          required: ["content", "sentiment"]
+        }
+      }
     });
-});
 
-btnClearHistory.addEventListener('click', () => {
-    if (confirm("Clear all recent activity?")) {
-        calcHistory = [];
-        localStorage.removeItem('trading_calc_history_v2');
-        renderHistory();
+    const data = JSON.parse(response.text || '{"content": "Insights unavailable.", "sentiment": "neutral"}');
+    
+    insightText.textContent = data.content;
+    sentimentBadge.textContent = data.sentiment;
+    sentimentBadge.className = `px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border border-white/5 ${
+      data.sentiment === 'bullish' ? 'bg-emerald-500/10 text-emerald-400' : 
+      data.sentiment === 'bearish' ? 'bg-rose-500/10 text-rose-400' : 
+      'bg-slate-800 text-slate-400'
+    }`;
+
+    sourcesContainer.innerHTML = '';
+    const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+    if (chunks && chunks.length > 0) {
+      chunks.forEach((chunk: any) => {
+        if (chunk.web) {
+          const link = document.createElement('a');
+          link.href = chunk.web.uri;
+          link.target = "_blank";
+          link.className = "px-2 py-1 bg-white/5 hover:bg-white/10 rounded text-[8px] font-bold text-slate-500 transition-colors uppercase tracking-tight";
+          link.textContent = chunk.web.title.slice(0, 20) + '...';
+          sourcesContainer.appendChild(link);
+        }
+      });
     }
+  } catch (err) {
+    console.error(err);
+    insightText.textContent = "AI insights could not be loaded at this time.";
+    sentimentBadge.textContent = "Error";
+  }
+}
+
+async function handleCalculate() {
+  const p = parseFloat(pointsInput.value);
+  if (isNaN(p) || p === 0) return;
+
+  isLoading = true;
+  calculateBtn.disabled = true;
+  btnText.classList.add('hidden');
+  btnSpinner.classList.remove('hidden');
+
+  // NEW FORMULA Logic from user snippet
+  // SP1: 500 / (p * 102)
+  // NQ1: 500 / (p * 79.52)
+  const calculatedValue = currentSymbol === MarketSymbol.SP1 ? 500 / (p * 102) : 500 / (p * 79.52);
+  
+  resultValue.textContent = calculatedValue.toFixed(1);
+  resultsArea.classList.remove('hidden');
+  
+  // Update History
+  history.unshift({
+    mode: currentSymbol,
+    point: p,
+    result: calculatedValue,
+    timestamp: Date.now()
+  });
+  history = history.slice(0, 10);
+  localStorage.setItem('trading_calc_history', JSON.stringify(history));
+  renderHistory();
+
+  // Reset insight state
+  insightText.textContent = "Fetching real-time insights based on current market data...";
+  sentimentBadge.textContent = "Analyzing...";
+  sentimentBadge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest bg-slate-800 text-slate-400 border border-white/5";
+  sourcesContainer.innerHTML = '';
+
+  // Trigger Gemini Insight
+  fetchAIInsight(currentSymbol, p).finally(() => {
+    isLoading = false;
+    calculateBtn.disabled = false;
+    btnText.classList.remove('hidden');
+    btnSpinner.classList.add('hidden');
+  });
+}
+
+// --- Event Listeners ---
+
+btnSP1.addEventListener('click', () => updateSymbolUI(MarketSymbol.SP1));
+btnNQ1.addEventListener('click', () => updateSymbolUI(MarketSymbol.NQ1));
+
+calculateBtn.addEventListener('click', handleCalculate);
+
+pointsInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleCalculate();
 });
 
-const infoBtn = document.getElementById("info-btn");
-const infoTooltip = document.getElementById("info-tooltip");
+infoBtn.addEventListener('mouseenter', () => infoTooltip.classList.remove('hidden'));
+infoBtn.addEventListener('mouseleave', () => infoTooltip.classList.add('hidden'));
 
-infoBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
-  infoTooltip.classList.toggle("hidden");
+copyBtn.addEventListener('click', async () => {
+  const value = resultValue.textContent || '';
+  try {
+    await navigator.clipboard.writeText(value);
+    copyText.textContent = "Copied!";
+    setTimeout(() => {
+      copyText.textContent = "Copy to Clipboard";
+    }, 2000);
+  } catch (err) {
+    console.error('Failed to copy', err);
+  }
 });
 
-// Close when clicking outside
-document.addEventListener("click", () => {
-  infoTooltip.classList.add("hidden");
-});
-
-init();
+// Initial Setup
+updateSymbolUI(MarketSymbol.SP1);
+renderHistory();

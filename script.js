@@ -142,7 +142,14 @@ btnClearHistory.addEventListener('click', () => {
     }
 });
 
-infoBtn.addEventListener('mouseenter', () => infoTooltip.classList.remove('hidden'));
-infoBtn.addEventListener('mouseleave', () => infoTooltip.classList.add('hidden'));
+infoBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    infoTooltip.classList.toggle('hidden');
+});
+
+// Close when clicking outside
+document.addEventListener('click', () => {
+    infoTooltip.classList.add('hidden');
+});
 
 init();

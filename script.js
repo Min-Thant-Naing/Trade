@@ -56,49 +56,13 @@ function calculate() {
     }
 
     // Display Result
-    valueResult.textContent = result.toFixed(1);
+    valueResult.textContent = result.toFixed(2);
     containerResult.classList.remove('hidden');
 
-    // Add to History
-    const entry = {
-        mode: currentMode,
-        point: p,
-        result: result,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    calcHistory = [entry, ...calcHistory].slice(0, 10);
-    localStorage.setItem('trading_calc_history_v2', JSON.stringify(calcHistory));
-    renderHistory();
 
     // Reset copy button
     textCopy.textContent = "Copy to Clipboard";
     btnCopy.classList.remove('bg-emerald-500', 'text-white');
-}
-
-function renderHistory() {
-    if (calcHistory.length === 0) {
-        sectionHistory.classList.add('hidden');
-        return;
-    }
-
-    sectionHistory.classList.remove('hidden');
-    listHistory.innerHTML = calcHistory.map((item) => `
-      <div class="bg-white dark:bg-slate-900/50 p-5 rounded-2xl flex justify-between items-center text-sm border border-slate-200 dark:border-white/5 border-l-4 border-l-indigo-600 shadow-md transition-all hover:translate-x-1 hover:shadow-lg">
-        <div class="flex flex-col">
-          <div class="flex items-center space-x-2 mb-1.5">
-            <span class="px-2 py-0.5 rounded-md text-[9px] font-black ${item.mode === 'SP1!' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'}">
-              ${item.mode}
-            </span>
-            <span class="text-[8px] text-slate-400 font-medium">${item.timestamp}</span>
-          </div>
-          <span class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-tighter">Pt: <span class="text-slate-900 dark:text-slate-100">${item.point}</span></span>
-        </div>
-        <div class="font-black text-indigo-600 dark:text-indigo-400 text-2xl tabular-nums">
-          ${item.result.toFixed(1)}
-        </div>
-      </div>
-    `).join('');
 }
 
 // Event Listeners

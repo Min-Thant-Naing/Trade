@@ -19,10 +19,34 @@
 <body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors duration-300">
     <div id="root" class="flex flex-col items-center justify-start min-h-screen p-4 md:p-8 space-y-8">
         <!-- Header -->
-        <header class="w-full max-w-4xl flex items-center justify-between sticky top-0 z-50 py-6 bg-slate-100/80 dark:bg-slate-950/80 backdrop-blur-md">
-            <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase select-none">
-                TradeLocker
-            </h1>
+        <header class="w-full flex items-center justify-center py-4 relative">
+            <div class="relative flex items-center space-x-2">
+                <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase select-none">
+                    Tradelocker
+                </h1>
+
+                <!-- Info Icon -->
+                <button id="info-btn"
+                    class="w-5 h-5 flex items-center justify-center rounded-full 
+                            border border-slate-500 text-slate-400 
+                            hover:text-indigo-400 hover:border-indigo-400
+                            transition-all text-xs font-bold">
+                    i
+                </button>
+
+                <!-- Info Tooltip -->
+                <div id="info-tooltip"
+                    class="hidden absolute top-full mt-3 left-1/2 -translate-x-1/2 
+                            bg-slate-900 border border-white/10 rounded-xl 
+                            px-4 py-3 text-center shadow-xl w-64 z-50 animate-in fade-in zoom-in">
+                    <p class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
+                        Calculates lot size for $500 risk
+                    </p>
+                    <p class="mt-1 text-[10px] font-black uppercase tracking-[0.25em] text-indigo-400">
+                        Eligible for ES1! or NQ1! users
+                    </p>
+                </div>
+            </div>
         </header>
 
         <main class="w-full max-w-md grid grid-cols-1 gap-6">

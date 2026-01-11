@@ -15,6 +15,7 @@ const sectionHistory = document.getElementById('history-section');
 const listHistory = document.getElementById('history-list');
 const btnClearHistory = document.getElementById('clear-history');
 const infoBtn = document.getElementById('info-btn');
+const infoTooltip = document.getElementById('info-tooltip');
 
 // Load Data
 function init() {

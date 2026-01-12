@@ -50,9 +50,9 @@ function calculate() {
 
     let result;
     if (currentMode === 'SP1!') {
-        result = 500 / (p * 60.57);
+        result = 500 / (p * 112.87);
     } else {
-        result = 500 / (p * 79.52);
+        result = 500 / (p * 85.25);
     }
 
     // Display Result

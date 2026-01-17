@@ -21,11 +21,6 @@ const containerResult = document.getElementById('result-container');
 const valueResult = document.getElementById('result-value');
 const btnCopy = document.getElementById('copy-btn');
 const textCopy = document.getElementById('copy-text');
-// History elements are still placeholders, they are commented out below if you add them later
-// const sectionHistory = document.getElementById('history-section');
-// const listHistory = document.getElementById('history-list');
-// const btnClearHistory = document.getElementById('clear-history');
-
 
 // Settings Modal DOM Elements (New)
 const settingsModal = document.getElementById('settings-modal');
@@ -43,13 +38,16 @@ const saveFixedBtn = document.getElementById('save-fixed-btn');
 const resetDefaultsBtn = document.getElementById('reset-defaults-btn');
 
 
+
+
+
 // Load Data and Settings
 function init() {
+    
     // Load History (if implemented later)
     const saved = localStorage.getItem('trading_calc_history_v2');
     if (saved) {
         calcHistory = JSON.parse(saved);
-        // renderHistory(); 
     }
 
     // Load Settings from LocalStorage
@@ -182,18 +180,35 @@ function handleSaveFixed() {
 // Function to manage the visual active state of the ES/NQ buttons in the settings panel
 function updateSettingsModeButtonsUI() {
     // These classes match the design provided by the user
-    const activeClass = "dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]";
-    const inactiveClass = "text-slate-400 hover:text-white bg-transparent scale-100 shadow-none";
+    const activeClass = "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]";
+    
+    // Updated inactiveClass definition for consistency:
+    const inactiveClass = "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
 
     if (currentSettingsMode === 'SP1!') {
-        btnEsSettings.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnNqSettings.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        btnEsSettings.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnNqSettings.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
         esNqFixedValueInput.value = userSettings.esFixedValue; // Sync input value
     } else {
-        btnNqSettings.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnEsSettings.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        btnNqSettings.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnEsSettings.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
         esNqFixedValueInput.value = userSettings.nqFixedValue; // Sync input value
     }
+}
+
+function updateModeUI() {
+    // ... existing updateModeUI logic for main calculator ...
+    const activeClass = "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]";
+    const inactiveClass = "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
+
+    if (currentMode === 'SP1!') {
+        btnSP1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnNQ1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+    } else {
+        btnNQ1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnSP1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+    }
+    containerResult.classList.add('hidden');
 }
 
 
@@ -265,4 +280,3 @@ window.onclick = function(event) {
 }
 
 init();
-

@@ -6,8 +6,8 @@ let currentSettingsMode = 'SP1!'; // New state variable for the settings modal i
 // Default Values for Settings
 const defaultSettings = {
     riskAmount: 500,
-    esFixedValue: 112.87,
-    nqFixedValue: 85.25,
+    esFixedValue: 101.01,
+    nqFixedValue: 100.172,
 };
 
 let userSettings = { ...defaultSettings };
@@ -280,3 +280,4 @@ window.onclick = function(event) {
 }
 
 init();
+

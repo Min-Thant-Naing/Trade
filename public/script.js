@@ -101,17 +101,17 @@ function updateModeNewsUI() {
     const inactiveClass = "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
 
     if (currentModeNews === 'today') {
-        btnTD.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnYS.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
-        btnTM.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        btnTD.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnYS.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        btnTM.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
     } else if (currentModeNews === 'yesterday') {
-        btnYS.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnTD.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
-        btnTM.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        btnYS.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnTD.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        btnTM.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
     } else {
-        btnTM.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnTD.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
-        btnYS.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        btnTM.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnTD.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        btnYS.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
     }
 }
 
@@ -414,16 +414,16 @@ function renderTimes() {
     const timesToShow = timesAll.slice(start, end);
 
     // Render time boxes like SPX/NAS buttons
-    timeList.innerHTML = timesToShow.map(time => {
-        const isActive = time === activeTime;
-        return `
-            <span data-time="${time}" class="flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest cursor-pointer transition-all duration-200
-            ${isActive ? "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]" 
-                        : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"}">
-                ${time}
-            </span>
-        `;
-    }).join("");
+timeList.innerHTML = timesToShow.map(time => {
+    const isActive = time === activeTime;
+    return `
+        <span data-time="${time}" class="inline-flex flex-auto min-w-[80px] max-w-[120px] justify-center py-2 px-9 rounded-xl text-xs font-black uppercase tracking-widest cursor-pointer transition-all duration-200
+        ${isActive ? "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]" 
+                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"}">
+            ${time}
+        </span>
+    `;
+}).join("");
     // Show/hide arrows
     arrowLeft.style.visibility = (start > 0) ? "visible" : "hidden";
     arrowRight.style.visibility = (end < timesAll.length) ? "visible" : "hidden";

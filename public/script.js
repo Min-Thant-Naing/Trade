@@ -467,7 +467,7 @@ function formatTimeLabel(time24) {
     hour = hour % 12;
     if (hour === 0) hour = 12;
 
-    return `${hour}:${String(minute).padStart(2, "0")}`;
+    return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 }
 
 // --- RENDERING ---
@@ -518,7 +518,7 @@ function renderTimes() {
     timeList.innerHTML = timesToShow.map(time => {
         const isActive = time === activeTime;
         return `
-            <span data-time="${time}" class="inline-flex flex-auto min-w-[80px] max-w-[120px] justify-center py-2 px-9 rounded-xl text-xs font-black uppercase tracking-widest cursor-pointer transition-all duration-200
+            <span data-time="${time}" class="inline-flex flex-auto min-w-[80px] max-w-[120px] justify-center py-2 px-10 rounded-xl text-xs font-black uppercase tracking-widest cursor-pointer transition-all duration-200
             ${isActive ? "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]" 
                         : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"}">
                 ${formatTimeLabel(time)}

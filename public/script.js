@@ -3,6 +3,7 @@ let currentMode = 'SP1!'; // SP1! is ES1!
 let currentModeNews = 'today';
 let calcHistory = [];
 let currentSettingsMode = 'SP1!'; // New state variable for the settings modal inputs
+let currentSettingsModeTime = 'NY'; 
 let events = [];       // global
 let activeTime = null; // global
 let timesAll = []; // store all times for the current day
@@ -48,6 +49,8 @@ const saveRiskBtn = document.getElementById('save-risk-btn');
 const esNqFixedValueInput = document.getElementById('es-nq-fixed-value-input');
 const btnEsSettings = document.getElementById('btn-es-settings');
 const btnNqSettings = document.getElementById('btn-nq-settings');
+const btnNySettings = document.getElementById('btn-ny-settings');
+const btnMySettings = document.getElementById('btn-my-settings');
 const saveFixedBtn = document.getElementById('save-fixed-btn');
 const resetDefaultsBtn = document.getElementById('reset-defaults-btn');
 
@@ -231,6 +234,21 @@ function updateSettingsModeButtonsUI() {
     }
 }
 
+function updateSettingsModeButtonsUITime() {
+    const activeClass = "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]";
+    const inactiveClass = "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
+
+    if (currentSettingsModeTime === 'NY') {
+        btnNySettings.className = `flex-1 py-3 px-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnMySettings.className = `flex-1 py-3 px-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        // esNqFixedValueInput.value = userSettings.esFixedValue;
+    } else {
+        btnMySettings.className = `flex-1 py-3 px-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnNySettings.className = `flex-1 py-3 px-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        // esNqFixedValueInput.value = userSettings.nqFixedValue;
+    }
+}
+
 function updateModeUI() {
     // ... existing updateModeUI logic for main calculator ...
     const activeClass = "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]";
@@ -275,7 +293,7 @@ btnTD.addEventListener('click', () => {
     currentModeNews = 'today';
     updateModeNewsUI();
     const filteredEvents = getFilteredEvents();
-    const times = [...new Set(filteredEvents.map(getNYTimeOnly))].sort();
+    const times = [...new Set(filteredEvents.map(getLocalTimeOnly))].sort();
     activeTime = times[0] || null;
     timePage = 0; // reset pagination
     renderTimes();
@@ -286,7 +304,7 @@ btnYS.addEventListener('click', () => {
     currentModeNews = 'yesterday';
     updateModeNewsUI();
     const filteredEvents = getFilteredEvents();
-    const times = [...new Set(filteredEvents.map(getNYTimeOnly))].sort();
+    const times = [...new Set(filteredEvents.map(getLocalTimeOnly))].sort();
     activeTime = times[0] || null;
     timePage = 0;
     renderTimes();
@@ -297,7 +315,7 @@ btnTM.addEventListener('click', () => {
     currentModeNews = 'tomorrow';
     updateModeNewsUI();
     const filteredEvents = getFilteredEvents();
-    const times = [...new Set(filteredEvents.map(getNYTimeOnly))].sort();
+    const times = [...new Set(filteredEvents.map(getLocalTimeOnly))].sort();
     activeTime = times[0] || null;
     timePage = 0;
     renderTimes();
@@ -340,6 +358,42 @@ btnNqSettings.addEventListener('click', () => {
 });
 
 
+function convertTimeBetweenZones(timeStr, fromZone, toZone) {
+    // timeStr = "HH:MM"
+    let [hour, minute] = timeStr.split(":").map(Number);
+
+    // NY offset = -13 for your current code, MY offset = -12
+    const offsets = { NY: -13, MY: -12 };
+
+    let diff = offsets[toZone] - offsets[fromZone]; // e.g., NY->MY = -12 - (-13) = 1
+    hour += diff;
+
+    if (hour < 0) hour += 24;
+    if (hour >= 24) hour -= 24;
+
+    return `${String(hour).padStart(2,"0")}:${String(minute).padStart(2,"0")}`;
+}
+
+// Listeners for the MY/NY switch within the settings panel
+btnNySettings.addEventListener('click', () => {
+    if (currentSettingsModeTime === 'MY') {
+        activeTime = convertTimeBetweenZones(activeTime, 'MY', 'NY');
+    }
+    currentSettingsModeTime = 'NY';
+    updateSettingsModeButtonsUITime();
+    renderTimes();
+});
+
+btnMySettings.addEventListener('click', () => {
+    if (currentSettingsModeTime === 'NY') {
+        activeTime = convertTimeBetweenZones(activeTime, 'NY', 'MY');
+    }
+    currentSettingsModeTime = 'MY';
+    updateSettingsModeButtonsUITime();
+    renderTimes();
+});
+
+
 // Close modal if user clicks outside of the content area
 window.onclick = function(event) {
   if (event.target == settingsModal) {
@@ -352,26 +406,36 @@ window.onclick = function(event) {
 
 
 // Convert event date+time to NY 24h format
-function convertToNYTime24(dateStr, timeStr) {
+function convertToLocalTime24(dateStr, timeStr) {
     const [month, day, year] = dateStr.split("-").map(Number);
     let [hour, minute] = timeStr.replace(/(am|pm)/i, "").split(":").map(Number);
     const isPM = /pm/i.test(timeStr);
     if (isPM && hour !== 12) hour += 12;
     if (!isPM && hour === 12) hour = 0;
+
     const utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
-    const adjustedTime = new Date(utcDate.getTime() - 13 * 60 * 60000); // UTC-5
+
+    let offsetHours = 0;
+
+    if (currentSettingsModeTime === 'NY') offsetHours = -13; 
+    if (currentSettingsModeTime === 'MY') offsetHours = -12; 
+
+    const adjustedTime = new Date(utcDate.getTime() + offsetHours * 60 * 60000);
+
     const adjHour = String(adjustedTime.getHours()).padStart(2, "0");
     const adjMinute = String(adjustedTime.getMinutes()).padStart(2, "0");
     const adjMonth = String(adjustedTime.getMonth() + 1).padStart(2, "0");
     const adjDay = String(adjustedTime.getDate()).padStart(2, "0");
     const adjYear = adjustedTime.getFullYear();
+
     return `${adjMonth}-${adjDay}-${adjYear} ${adjHour}:${adjMinute}`;
 }
 
 // Only get the time part
-function getNYTimeOnly(ev) {
-    return convertToNYTime24(ev.date, ev.time).split(" ")[1];
+function getLocalTimeOnly(ev) {
+    return convertToLocalTime24(ev.date, ev.time).split(" ")[1];
 }
+
 
 // Filter events based on selected news mode
 function getFilteredEvents() {
@@ -398,50 +462,76 @@ function getFilteredEvents() {
 // --- RENDERING ---
 function renderTimes() {
     const filteredEvents = getFilteredEvents();
+    
+    // --- NO EVENTS CASE ---
     if (!filteredEvents.length) {
-        timeList.innerHTML = "<p class='text-slate-400 text-xs'>No events for this day.</p>";
+        timeList.innerHTML = `
+        `;
         activeTime = null;
+        arrowLeft.innerHTML = `
+        `;
+        arrowRight.innerHTML = `
+        `;
+        // arrowLeft.style.visibility = "hidden";
+        // arrowRight.style.visibility = "hidden";
+        
+        // Disable NY/MY buttons
+        btnNySettings.disabled = true;
+        btnMySettings.disabled = true;
+
+        // Optional: visually show disabled state
+        btnNySettings.classList.add('opacity-50');
+        btnMySettings.classList.add('opacity-50');
+        
         return;
     }
 
-    // All unique sorted times
-    timesAll = [...new Set(filteredEvents.map(getNYTimeOnly))].sort();
+    // --- ENABLE BUTTONS IF EVENTS EXIST ---
+    btnNySettings.disabled = false;
+    btnMySettings.disabled = false;
+    arrowLeft.innerHTML = `‹
+        `;
+    arrowRight.innerHTML = `›
+    `;
+    btnNySettings.classList.remove('opacity-50');
+    btnMySettings.classList.remove('opacity-50');
+
+    // --- NORMAL TIMES RENDERING ---
+    timesAll = [...new Set(filteredEvents.map(getLocalTimeOnly))].sort();
     activeTime = activeTime || timesAll[0];
 
-    // Calculate slice for current page (sliding window)
     const start = timePage;
     const end = Math.min(start + timesPerPage, timesAll.length);
     const timesToShow = timesAll.slice(start, end);
 
-    // Render time boxes like SPX/NAS buttons
-timeList.innerHTML = timesToShow.map(time => {
-    const isActive = time === activeTime;
-    return `
-        <span data-time="${time}" class="inline-flex flex-auto min-w-[80px] max-w-[120px] justify-center py-2 px-9 rounded-xl text-xs font-black uppercase tracking-widest cursor-pointer transition-all duration-200
-        ${isActive ? "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]" 
-                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"}">
-            ${time}
-        </span>
-    `;
-}).join("");
-    // Show/hide arrows
+    timeList.innerHTML = timesToShow.map(time => {
+        const isActive = time === activeTime;
+        return `
+            <span data-time="${time}" class="inline-flex flex-auto min-w-[80px] max-w-[120px] justify-center py-2 px-9 rounded-xl text-xs font-black uppercase tracking-widest cursor-pointer transition-all duration-200
+            ${isActive ? "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]" 
+                        : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"}">
+                ${time}
+            </span>
+        `;
+    }).join("");
+
     arrowLeft.style.visibility = (start > 0) ? "visible" : "hidden";
     arrowRight.style.visibility = (end < timesAll.length) ? "visible" : "hidden";
 
-    // Arrow click events
     arrowLeft.onclick = () => {
         if (timePage > 0) {
-            timePage--; // Slide left by 1
+            timePage--;
             renderTimes();
         }
     };
     arrowRight.onclick = () => {
         if (end < timesAll.length) {
-            timePage++; // Slide right by 1
+            timePage++;
             renderTimes();
         }
     };
 }
+
 
 
 
@@ -452,7 +542,7 @@ function renderEvents() {
     }
     const filteredEvents = getFilteredEvents();
     container.innerHTML = filteredEvents
-        .filter(ev => getNYTimeOnly(ev) === activeTime)
+        .filter(ev => getLocalTimeOnly(ev) === activeTime)
         .map(ev => {
         let impactClass = "bg-yellow-400 dark:bg-yellow-600"; // default low impact
         if (ev.impact === "Medium") impactClass = "bg-orange-400 dark:bg-orange-600";

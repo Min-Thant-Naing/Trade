@@ -457,7 +457,18 @@ function getFilteredEvents() {
     return events.filter(ev => ev.date === targetDate);
 }
 
+function formatTimeLabel(time24) {
+    if (currentSettingsModeTime !== 'MY') {
+        return time24; // NY → 24h
+    }
 
+    let [hour, minute] = time24.split(":").map(Number);
+
+    hour = hour % 12;
+    if (hour === 0) hour = 12;
+
+    return `${hour}:${String(minute).padStart(2, "0")}`;
+}
 
 // --- RENDERING ---
 function renderTimes() {
@@ -510,7 +521,7 @@ function renderTimes() {
             <span data-time="${time}" class="inline-flex flex-auto min-w-[80px] max-w-[120px] justify-center py-2 px-9 rounded-xl text-xs font-black uppercase tracking-widest cursor-pointer transition-all duration-200
             ${isActive ? "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]" 
                         : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"}">
-                ${time}
+                ${formatTimeLabel(time)}
             </span>
         `;
     }).join("");
@@ -531,9 +542,6 @@ function renderTimes() {
         }
     };
 }
-
-
-
 
 function renderEvents() {
     if (!activeTime) {

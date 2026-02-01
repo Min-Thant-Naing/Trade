@@ -6,6 +6,8 @@ const xml2js = require("xml2js")
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
+const TODO_FILE = path.join(__dirname, "trading_todo.txt");
+
 
 const app = express();
 app.use(cors());
@@ -38,6 +40,28 @@ app.get("/calendar", async (req, res) => {
     }
   }
 });
+
+// Route to save notes
+app.post("/save-todo", express.json(), (req, res) => {
+  const { note } = req.body;
+  if (!note) return res.json({ success: false, error: "No note provided" });
+
+  fs.writeFile(TODO_FILE, note, "utf-8", (err) => {
+    if (err) return res.json({ success: false, error: err.message });
+    return res.json({ success: true });
+  });
+});
+
+// Route to load notes
+app.get("/load-todo", (req, res) => {
+  if (fs.existsSync(TODO_FILE)) {
+    const note = fs.readFileSync(TODO_FILE, "utf-8");
+    return res.json({ note });
+  } else {
+    return res.json({ note: "" });
+  }
+});
+
 
 app.listen(3000, () => {
   console.log("Server running at http://localhost:3000");

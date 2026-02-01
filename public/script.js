@@ -12,7 +12,6 @@ let timePage = 0; // current page of times
 const timesPerPage = 3; // show only 3 times at a time
 //  To-Do Notes Logic
 const todoInput = document.getElementById("todo-input");
-const saveTodoBtn = document.getElementById("save-todo-btn");
 
 // Default Values for Settings
 const defaultSettings = {
@@ -605,31 +604,26 @@ async function loadTodo() {
     }
 }
 
-// Save notes to server file
-async function saveTodo() {
-    const note = todoInput.value.trim();
-    if (!note) return alert("Nothing to save!");
+let todoSaveTimer = null;
 
-    try {
-        const res = await fetch("/save-todo", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ note })
-        });
-        const data = await res.json();
-        if (data.success) {
-            alert("Note saved successfully!");
-        } else {
-            alert("Failed to save note: " + data.error);
+async function autoSaveTodo() {
+    const note = todoInput.value;
+
+    // debounce (wait 600ms after typing stops)
+    clearTimeout(todoSaveTimer);
+    todoSaveTimer = setTimeout(async () => {
+        try {
+            await fetch("/save-todo", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ note })
+            });
+        } catch (err) {
+            console.error("Auto-save failed:", err);
         }
-    } catch (err) {
-        alert("Error saving note: " + err.message);
-    }
+    }, 600);
 }
-
-
-saveTodoBtn.addEventListener("click", saveTodo);
-
+todoInput.addEventListener("input", autoSaveTodo);
 
 
 loadEvents();

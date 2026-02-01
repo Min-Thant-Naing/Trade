@@ -10,6 +10,9 @@ let timesAll = []; // store all times for the current day
 let timesVisibleCount = 3; // show only 3 initially
 let timePage = 0; // current page of times
 const timesPerPage = 3; // show only 3 times at a time
+//  To-Do Notes Logic
+const todoInput = document.getElementById("todo-input");
+const saveTodoBtn = document.getElementById("save-todo-btn");
 
 // Default Values for Settings
 const defaultSettings = {
@@ -590,7 +593,55 @@ async function loadEvents() {
     }
 }
 
+
+// Load saved notes on start
+async function loadTodo() {
+    try {
+        const res = await fetch("/load-todo");
+        const data = await res.json();
+        todoInput.value = data.note || "";
+    } catch (err) {
+        console.error("Failed to load note:", err);
+    }
+}
+
+// Save notes to server file
+async function saveTodo() {
+    const note = todoInput.value.trim();
+    if (!note) return alert("Nothing to save!");
+
+    try {
+        const res = await fetch("/save-todo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ note })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert("Note saved successfully!");
+        } else {
+            alert("Failed to save note: " + data.error);
+        }
+    } catch (err) {
+        alert("Error saving note: " + err.message);
+    }
+}
+
+
+saveTodoBtn.addEventListener("click", saveTodo);
+
+
+
 loadEvents();
 
 
 init();
+
+// Call loadTodo on app start
+loadTodo();
+
+
+
+
+
+

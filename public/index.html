@@ -136,9 +136,6 @@
             <section class="bg-white dark:bg-slate-900/50 rounded-3xl w-full p-5 shadow-xl border border-slate-200 dark:border-white/5 backdrop-blur-sm">
                 <div class="space-y-3">
                     <textarea id="todo-input" rows="6" placeholder="Write your notes here..." class="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-transparent rounded-2xl p-4 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none resize-none shadow-inner"></textarea>
-                    <button id="save-todo-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-black uppercase tracking-widest py-5 rounded-2xl shadow-xl shadow-indigo-600/30 transition-all active:scale-95">
-                        Save Note
-                    </button>
                 </div>
             </section>
         </main>
@@ -196,6 +193,11 @@
 
                         <!-- Input Field -->
                         <input id="es-nq-fixed-value-input" type="number" inputmode="decimal" value="100.172" class="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-transparent rounded-2xl py-3 px-4 text-lg font-black text-slate-900 dark:text-white focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none tabular-nums appearance-none shadow-inner">
+
+                        <!-- Save Button -->
+                        <button id="save-fixed-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold py-4 px-6 rounded-xl transition-all shadow-lg uppercase tracking-widest active:scale-95 disabled:opacity-30 shadow-indigo-600/30 ">
+                            SAVE
+                        </button>
                     </div>
 
                     <p class="text-xs text-slate-400 mt-2 ml-1 mb-6">Default: ES=<span id="default-es-value">101.01</span>, NQ=<span id="default-nq-value">100.172</span></p>

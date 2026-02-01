@@ -5,9 +5,8 @@ const axios = require("axios");
 const xml2js = require("xml2js")
 const cors = require("cors");
 const fs = require("fs");
+const db = require("./db");
 const path = require("path");
-const TODO_FILE = path.join(__dirname, "trading_todo.txt");
-
 
 const app = express();
 app.use(cors());
@@ -44,22 +43,34 @@ app.get("/calendar", async (req, res) => {
 // Route to save notes
 app.post("/save-todo", express.json(), (req, res) => {
   const { note } = req.body;
-  if (!note) return res.json({ success: false, error: "No note provided" });
+  if (note === undefined) {
+    return res.json({ success: false });
+  }
 
-  fs.writeFile(TODO_FILE, note, "utf-8", (err) => {
-    if (err) return res.json({ success: false, error: err.message });
-    return res.json({ success: true });
-  });
+  db.run(
+    "UPDATE todo SET note = ? WHERE id = 1",
+    [note],
+    err => {
+      if (err) {
+        return res.json({ success: false, error: err.message });
+      }
+      res.json({ success: true });
+    }
+  );
 });
+
 
 // Route to load notes
 app.get("/load-todo", (req, res) => {
-  if (fs.existsSync(TODO_FILE)) {
-    const note = fs.readFileSync(TODO_FILE, "utf-8");
-    return res.json({ note });
-  } else {
-    return res.json({ note: "" });
-  }
+  db.get(
+    "SELECT note FROM todo WHERE id = 1",
+    (err, row) => {
+      if (err) {
+        return res.json({ note: "" });
+      }
+      res.json({ note: row?.note || "" });
+    }
+  );
 });
 
 

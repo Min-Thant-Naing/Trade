@@ -126,6 +126,21 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Note Section -->
+            <div class="relative flex items-center justify-between space-x-3 gap-6 mt-5 mb-6">
+                <h1 class="text-base md:text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase select-none">
+                    To-Do List
+                </h1>
+            </div>
+            <section class="bg-white dark:bg-slate-900/50 rounded-3xl w-full p-5 shadow-xl border border-slate-200 dark:border-white/5 backdrop-blur-sm">
+                <div class="space-y-3">
+                    <textarea id="todo-input" rows="6" placeholder="Write your notes here..." class="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-transparent rounded-2xl p-4 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none resize-none shadow-inner"></textarea>
+                    <button id="save-todo-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-black uppercase tracking-widest py-5 rounded-2xl shadow-xl shadow-indigo-600/30 transition-all active:scale-95">
+                        Save Note
+                    </button>
+                </div>
+            </section>
         </main>
         <div class="h-5"></div>
     </div>  
@@ -211,5 +226,3 @@
     <script src="script.js"></script>
 </body>
 </html> 
-
-

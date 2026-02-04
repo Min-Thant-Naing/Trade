@@ -5,7 +5,7 @@ const axios = require("axios");
 const xml2js = require("xml2js")
 const cors = require("cors");
 const fs = require("fs");
-const db = require("./db");
+// const db = require("./db");
 const path = require("path");
 
 const app = express();
@@ -39,40 +39,6 @@ app.get("/calendar", async (req, res) => {
     }
   }
 });
-
-// Route to save notes
-app.post("/save-todo", express.json(), (req, res) => {
-  const { note } = req.body;
-  if (note === undefined) {
-    return res.json({ success: false });
-  }
-
-  db.run(
-    "UPDATE todo SET note = ? WHERE id = 1",
-    [note],
-    err => {
-      if (err) {
-        return res.json({ success: false, error: err.message });
-      }
-      res.json({ success: true });
-    }
-  );
-});
-
-
-// Route to load notes
-app.get("/load-todo", (req, res) => {
-  db.get(
-    "SELECT note FROM todo WHERE id = 1",
-    (err, row) => {
-      if (err) {
-        return res.json({ note: "" });
-      }
-      res.json({ note: row?.note || "" });
-    }
-  );
-});
-
 
 app.listen(3000, () => {
   console.log("Server running at http://localhost:3000");

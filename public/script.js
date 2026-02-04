@@ -592,47 +592,48 @@ async function loadEvents() {
     }
 }
 
+// note session storage for todo list
 
-// Load saved notes on start
-async function loadTodo() {
-    try {
-        const res = await fetch("/load-todo");
-        const data = await res.json();
-        todoInput.value = data.note || "";
-    } catch (err) {
-        console.error("Failed to load note:", err);
+// Persistent note state for To-Do
+let noteState = {
+    text: ""
+};
+
+// Load note from localStorage if available
+function loadNoteLocal() {
+    const saved = localStorage.getItem("todo_note");
+    if (saved) {
+        try {
+            noteState = JSON.parse(saved);
+            todoInput.value = noteState.text || "";
+        } catch (err) {
+            console.warn("Failed to parse saved note, resetting...", err);
+            noteState = { text: "" };
+            todoInput.value = "";
+            localStorage.removeItem("todo_note"); // optional: clean bad data
+        }
     }
+}
+// Save note to localStorage
+function saveNoteLocal(text) {
+    noteState.text = text;
+    localStorage.setItem("todo_note", JSON.stringify(noteState));
 }
 
 let todoSaveTimer = null;
 
-async function autoSaveTodo() {
+todoInput.addEventListener("input", () => {
     const note = todoInput.value;
+    saveNoteLocal(note);
+});
 
-    // debounce (wait 600ms after typing stops)
-    clearTimeout(todoSaveTimer);
-    todoSaveTimer = setTimeout(async () => {
-        try {
-            await fetch("/save-todo", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ note })
-            });
-        } catch (err) {
-            console.error("Auto-save failed:", err);
-        }
-    }, 600);
-}
-todoInput.addEventListener("input", autoSaveTodo);
 
+loadNoteLocal();
 
 loadEvents();
 
-
 init();
 
-// Call loadTodo on app start
-loadTodo();
 
 
 

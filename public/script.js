@@ -10,8 +10,6 @@ let timesAll = []; // store all times for the current day
 let timesVisibleCount = 3; // show only 3 initially
 let timePage = 0; // current page of times
 const timesPerPage = 3; // show only 3 times at a time
-//  To-Do Notes Logic
-const todoInput = document.getElementById("todo-input");
 
 // Default Values for Settings
 const defaultSettings = {
@@ -38,6 +36,7 @@ const btnCopy = document.getElementById('copy-btn');
 const textCopy = document.getElementById('copy-text');
 const arrowLeft = document.getElementById('time-prev');
 const arrowRight = document.getElementById('time-next');
+const todoInput = document.getElementById("todo-input");
 
 // Settings Modal DOM Elements (New)
 const settingsModal = document.getElementById('settings-modal');
@@ -625,16 +624,25 @@ let todoSaveTimer = null;
 todoInput.addEventListener("input", () => {
     const note = todoInput.value;
     saveNoteLocal(note);
+    adjustTextareaHeight();
 });
+
+function adjustTextareaHeight() {
+    const maxHeight = 300; // max height in pixels
+    todoInput.style.height = 'auto'; // reset height to recalc scrollHeight
+    const newHeight = Math.min(todoInput.scrollHeight, maxHeight);
+    todoInput.style.height = newHeight + 'px';
+    
+    // Optional: show scrollbar if max reached
+    if (todoInput.scrollHeight > maxHeight) {
+        todoInput.style.overflowY = 'auto';
+    } else {
+        todoInput.style.overflowY = 'hidden';
+    }
+}
 
 
 loadNoteLocal();
-
+adjustTextareaHeight();
 loadEvents();
-
 init();
-
-
-
-
-

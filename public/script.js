@@ -707,38 +707,42 @@ async function loadTrades() {
  * Logic & Calculation Block
  */
 function processAndRender() {
-    const entryPrices = {};
-    const dailyPnL = {};
+    const calendarGrid = document.getElementById("calendar");
+    
+    // Smooth transition out
+    calendarGrid.classList.add('opacity-0');
 
-    // Map Entry Prices
-    tradeData.forEach(t => {
-        if (t[15] === "true") entryPrices[t[16]] = parseFloat(t[8]);
-    });
+    setTimeout(() => {
+        const entryPrices = {};
+        const dailyPnL = {};
 
-    // Calculate PnL
-    tradeData.forEach(t => {
-        if (t[15] === "false" && t[6] === "Filled") {
-            const posId = t[16];
-            const side = t[4].toUpperCase();
-            const openPrice = entryPrices[posId];
-            if (!openPrice) return;
+        tradeData.forEach(t => {
+            if (t[15] === "true") entryPrices[t[16]] = parseFloat(t[8]);
+        });
 
-            const lots = parseFloat(t[3]);
-            const closePrice = parseFloat(t[8]);
-            const symbol = t[1].toUpperCase();
-            const contractSize = (symbol === "4701" || symbol === "4703") ? 100 : 1;
-            
-            const pnl = (side === "BUY" ? (openPrice - closePrice) : (closePrice - openPrice)) * lots * contractSize;
+        tradeData.forEach(t => {
+            if (t[15] === "false" && t[6] === "Filled") {
+                const posId = t[16];
+                const side = t[4].toUpperCase();
+                const openPrice = entryPrices[posId];
+                if (!openPrice) return;
+                const lots = parseFloat(t[3]);
+                const closePrice = parseFloat(t[8]);
+                const symbol = t[1].toUpperCase();
+                const contractSize = (symbol === "4701" || symbol === "4703") ? 100 : 1;
+                const pnl = (side === "BUY" ? (openPrice - closePrice) : (closePrice - openPrice)) * lots * contractSize;
+                const d = new Date(parseInt(t[13]));
+                const dateKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+                dailyPnL[dateKey] = (dailyPnL[dateKey] || 0) + pnl;
+            }
+        });
 
-            const d = new Date(parseInt(t[13]));
-            const dateKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
-            dailyPnL[dateKey] = (dailyPnL[dateKey] || 0) + pnl;
-        }
-    });
-
-    renderCalendarUI(dailyPnL);
+        renderCalendarUI(dailyPnL);
+        
+        // Smooth transition in
+        calendarGrid.classList.remove('opacity-0');
+    }, 100);
 }
-
 /**
  * UI Rendering (Tailwind Class Pattern)
  */
@@ -772,18 +776,16 @@ function renderCalendarUI(dailyPnL) {
         const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
         
         // Dynamic Tailwind Classes based on PnL
-        let cardClass = " relative w-full aspect-square rounded-xl border transition-all duration-200 flex flex-col items-center justify-center overflow-hidden";
+        let cardClass = "relative w-full aspect-square rounded-xl border transition-all duration-200 flex flex-col items-center justify-center overflow-hidden";
 
-
-if (pnl > 0) {
-    // Light Mode: Vibrant emerald tint | Dark Mode: Subtle glow
-    cardClass += " bg-emerald-500/10 border-emerald-500/30 dark:bg-emerald-500/10 dark:border-emerald-500/20";
-} else if (pnl < 0) {
-    // Light Mode: Vibrant rose tint | Dark Mode: Subtle glow
-    cardClass += " bg-rose-500/10 border-rose-500/30 dark:bg-rose-500/10 dark:border-rose-500/20";
-} else {
-    cardClass += " bg-slate-50 dark:bg-slate-800/50 border-transparent";
-}
+        if (pnl > 0) {
+            cardClass += " bg-emerald-500/10 border-emerald-500/30 dark:border-emerald-500/20";
+        } else if (pnl < 0) {
+            cardClass += " bg-rose-500/10 border-rose-500/30 dark:border-rose-500/20";
+        } else {
+            // MATCH THE SECTION BACKGROUND EXACTLY
+            cardClass += " bg-transparent border-slate-100 dark:border-white/5";
+        }
 
         const div = document.createElement("div");
         div.className = cardClass;
@@ -835,9 +837,15 @@ function updateTotalUI(total) {
 }
 
 
+
+
+
+
+
 // Event Listeners
 monthSelect.onchange = processAndRender;
 yearSelect.onchange = processAndRender;
 
 // Launch
 initCalendar();
+

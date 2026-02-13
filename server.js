@@ -1,10 +1,8 @@
-
 import { fileURLToPath } from "url";
 import express from "express";
 import axios from "axios";
 import xml2js from "xml2js";
 import cors from "cors";
-import fs from "fs";
 import path from "path";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,10 +16,12 @@ const SERVER = "HEROFX";
 let cachedToken = null;
 let cachedAccountId = null;
 
+// ================= IN-MEMORY CACHES =================
+let calendarCache = [];
+let tradesCache = [];
+
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
-const CACHE_FILE = path.join(__dirname, "usd_cache.json");
-const TRADES_CACHE_FILE = path.join(__dirname, "orders_history.json");
 
 async function login() {
     const res = await fetch(`${BASE_URL}/auth/jwt/token`, {
@@ -33,6 +33,8 @@ async function login() {
     cachedToken = data.accessToken;
 }
 
+
+
 async function getAccount() {
     const res = await fetch(`${BASE_URL}/auth/jwt/all-accounts`, {
         headers: { 
@@ -42,8 +44,6 @@ async function getAccount() {
         }
     });
     const data = await res.json();
-    // console.log(data);
-
     cachedAccountId = data.accounts[0].id;
 }
 
@@ -56,20 +56,15 @@ app.get("/calendar", async (req, res) => {
     const parsed = await xml2js.parseStringPromise(response.data, { explicitArray: false });
     const events = parsed.weeklyevents?.event || [];
     const usdEvents = events.filter(ev => ev.country === "USD" || ev.country?.[0] === "USD");
-    fs.writeFileSync(CACHE_FILE, JSON.stringify({ weeklyevents: { event: usdEvents } }, null, 2));
+
+    // Update in-memory cache instead of writing file
+    calendarCache = usdEvents;
+
     console.log("Now i am at try");
     return res.json(usdEvents);
   } catch (err) {
-    if (fs.existsSync(CACHE_FILE)) {
-      const fileData = fs.readFileSync(CACHE_FILE, "utf-8");
-      const parsedFile = JSON.parse(fileData);
-      const allEvents = parsedFile.weeklyevents?.event || [];
-      console.log("Now i am at catch");
-      return res.json(allEvents);
-    } else {
-      console.log("No cache file found");
-      return res.json([]);
-    }
+    console.log("Now i am at catch");
+    return res.json(calendarCache); // fallback to in-memory cache
   }
 });
 
@@ -90,26 +85,17 @@ app.get("/trades", async (req, res) => {
         const tradeData = await tradeRes.json();
         const ordersHistory = tradeData.d.ordersHistory;
 
-        // Save to local file for future offline use
-        fs.writeFileSync(TRADES_CACHE_FILE, JSON.stringify(ordersHistory, null, 2));
-        
+        // Update in-memory cache instead of writing file
+        tradesCache = ordersHistory;
+
         console.log("Trades loaded from API and cached.");
         return res.json(ordersHistory);
         
     } catch (err) {
         console.error("API Error, attempting to load cache:", err.message);
 
-        // Check if the backup file exists
-        if (fs.existsSync(TRADES_CACHE_FILE)) {
-            const fileData = fs.readFileSync(TRADES_CACHE_FILE, "utf-8");
-            const cachedOrders = JSON.parse(fileData);
-            
-            console.log("Trades loaded from local cache (orders_history.json)");
-            return res.json(cachedOrders);
-        } else {
-            console.log("No trades cache file found.");
-            return res.status(500).json({ error: "API failed and no cache available." });
-        }
+        console.log("Loading trades from in-memory cache");
+        return res.json(tradesCache); // fallback to in-memory cache
     }
 });
 

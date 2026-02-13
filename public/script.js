@@ -670,7 +670,7 @@ function initCalendar() {
     // Fill Month Select
     calMonths.forEach((m, i) => {
         const opt = new Option(m, i);
-        opt.className = "bg-slate-50  dark:bg-slate-950 text-slate-400 border-none outline-none font-black";
+        opt.className = "text-slate-400 border-none outline-none font-black";
         monthSelect.appendChild(opt);
     });
 
@@ -678,7 +678,7 @@ function initCalendar() {
     const startYear = currentCalYear - 3;
     for (let y = startYear; y <= currentCalYear + 3; y++) {
         const opt = new Option(y, y);
-        opt.className = "bg-slate-50  dark:bg-slate-950 text-slate-400 outline-none border-none  font-black";
+        opt.className = "text-slate-400 outline-none border-none  font-black";
         if (y === currentCalYear) opt.selected = true;
         yearSelect.appendChild(opt);
     }

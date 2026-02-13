@@ -646,3 +646,198 @@ loadNoteLocal();
 adjustTextareaHeight();
 loadEvents();
 init();
+
+
+
+
+// Calendar State
+let currentCalMonth = new Date().getMonth();
+let currentCalYear = new Date().getFullYear();
+let tradeData = [];
+
+// DOM Elements
+const monthSelect = document.getElementById("monthSelect");
+const yearSelect = document.getElementById("yearSelect");
+const totalPnLEl = document.getElementById("totalPnL");
+const calendarGrid = document.getElementById("calendar");
+
+const calMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+/**
+ * Initialize Calendar
+ */
+function initCalendar() {
+    // Fill Month Select
+    calMonths.forEach((m, i) => {
+        const opt = new Option(m, i);
+        opt.className = "bg-slate-50  dark:bg-slate-950 text-slate-400 border-none outline-none font-black";
+        monthSelect.appendChild(opt);
+    });
+
+    // Fill Year Select (PrecisionCalc style: Current +/- 3)
+    const startYear = currentCalYear - 3;
+    for (let y = startYear; y <= currentCalYear + 3; y++) {
+        const opt = new Option(y, y);
+        opt.className = "bg-slate-50  dark:bg-slate-950 text-slate-400 outline-none border-none  font-black";
+        if (y === currentCalYear) opt.selected = true;
+        yearSelect.appendChild(opt);
+    }
+
+    monthSelect.value = currentCalMonth;
+    
+    // Initial Load
+    loadTrades();
+}
+
+/**
+ * Fetch and Process Data
+ */
+async function loadTrades() {
+    try {
+        const response = await fetch("/trades");
+        tradeData = await response.json();
+        
+        processAndRender();
+    } catch (err) {
+        console.error("Failed to load trades:", err);
+    }
+}
+
+/**
+ * Logic & Calculation Block
+ */
+function processAndRender() {
+    const entryPrices = {};
+    const dailyPnL = {};
+
+    // Map Entry Prices
+    tradeData.forEach(t => {
+        if (t[15] === "true") entryPrices[t[16]] = parseFloat(t[8]);
+    });
+
+    // Calculate PnL
+    tradeData.forEach(t => {
+        if (t[15] === "false" && t[6] === "Filled") {
+            const posId = t[16];
+            const side = t[4].toUpperCase();
+            const openPrice = entryPrices[posId];
+            if (!openPrice) return;
+
+            const lots = parseFloat(t[3]);
+            const closePrice = parseFloat(t[8]);
+            const symbol = t[1].toUpperCase();
+            const contractSize = (symbol === "4701" || symbol === "4703") ? 100 : 1;
+            
+            const pnl = (side === "BUY" ? (openPrice - closePrice) : (closePrice - openPrice)) * lots * contractSize;
+
+            const d = new Date(parseInt(t[13]));
+            const dateKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+            dailyPnL[dateKey] = (dailyPnL[dateKey] || 0) + pnl;
+        }
+    });
+
+    renderCalendarUI(dailyPnL);
+}
+
+/**
+ * UI Rendering (Tailwind Class Pattern)
+ */
+function renderCalendarUI(dailyPnL) {
+    calendarGrid.innerHTML = "";
+    const month = parseInt(monthSelect.value);
+    const year = parseInt(yearSelect.value);
+    let monthlyTotal = 0;
+
+    // Weekday Headers
+    ["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(day => {
+        const div = document.createElement("div");
+        div.className = "text-center text-[13px] font-black text-slate-400 uppercase tracking-tighter mb-2";
+        div.textContent = day;
+        calendarGrid.appendChild(div);
+    });
+    
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Padding for first day
+    for (let i = 0; i < firstDay; i++) calendarGrid.appendChild(document.createElement("div"));
+
+    // Day Cells
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        const pnl = dailyPnL[dateKey] || 0;
+        monthlyTotal += pnl;
+
+        const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+        
+        // Dynamic Tailwind Classes based on PnL
+        let cardClass = " relative w-full aspect-square rounded-xl border transition-all duration-200 flex flex-col items-center justify-center overflow-hidden";
+
+
+if (pnl > 0) {
+    // Light Mode: Vibrant emerald tint | Dark Mode: Subtle glow
+    cardClass += " bg-emerald-500/10 border-emerald-500/30 dark:bg-emerald-500/10 dark:border-emerald-500/20";
+} else if (pnl < 0) {
+    // Light Mode: Vibrant rose tint | Dark Mode: Subtle glow
+    cardClass += " bg-rose-500/10 border-rose-500/30 dark:bg-rose-500/10 dark:border-rose-500/20";
+} else {
+    cardClass += " bg-slate-50 dark:bg-slate-800/50 border-transparent";
+}
+
+        const div = document.createElement("div");
+        div.className = cardClass;
+        
+        div.innerHTML = `
+            <div class="flex justify-center pt-2">
+                <div class="text-[9px] sm:text-[11px] font-black ${isToday ? 'bg-indigo-600 dark:bg-indigo-500 text-white w-5 h-5 rounded-lg flex items-center justify-center shadow-md' : 'text-slate-400 dark:text-slate-500'}">
+                    ${day}
+                </div>
+            </div>
+
+            <!-- PnL: Remains in the vertical center of the card -->
+            <div class="flex-1 flex items-center justify-center pb-1 ">
+                ${pnl !== 0 ? `
+                    <div class="text-[7px] sm:text-[8px] font-black tracking-tight 
+                    ${pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}">
+                        ${pnl >= 0 ? '+$' : '-$'}${Math.abs(pnl).toFixed(2)}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        calendarGrid.appendChild(div);
+    }
+
+    // Update Summary Header
+    updateTotalUI(monthlyTotal);
+}
+
+function updateTotalUI(total) {
+    totalPnLEl.textContent =
+        (total >= 0 ? "+$" : "-$") + Math.abs(total).toFixed(0);
+
+    let baseClass =
+        "ml-2 px-3 py-2 rounded-xl text-xs font-black tabular-nums transition-all duration-300 border";
+
+    if (total > 0) {
+        totalPnLEl.className =
+            baseClass +
+            " bg-emerald-50/50 border-emerald-500/20 text-emerald-500 dark:bg-emerald-500/5";
+    } else if (total < 0) {
+        totalPnLEl.className =
+            baseClass +
+            " bg-rose-50/50 border-rose-500/20 text-rose-500 dark:bg-rose-500/5";
+    } else {
+        totalPnLEl.className =
+            baseClass +
+            " bg-slate-50 border-transparent dark:bg-slate-800/50 text-slate-400";
+    }
+}
+
+
+// Event Listeners
+monthSelect.onchange = processAndRender;
+yearSelect.onchange = processAndRender;
+
+// Launch
+initCalendar();

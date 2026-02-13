@@ -784,7 +784,7 @@ function renderCalendarUI(dailyPnL) {
             cardClass += " bg-rose-500/10 border-rose-500/30 dark:border-rose-500/20";
         } else {
             // MATCH THE SECTION BACKGROUND EXACTLY
-            cardClass += " bg-transparent border-slate-100 dark:border-white/5";
+            cardClass += " bg-slate-50 dark:bg-slate-800/50 border-transparent";
         }
 
         const div = document.createElement("div");
@@ -848,4 +848,5 @@ yearSelect.onchange = processAndRender;
 
 // Launch
 initCalendar();
+
 

@@ -792,7 +792,7 @@ function renderCalendarUI(dailyPnL) {
         
         div.innerHTML = `
             <div class="flex justify-center pt-2">
-                <div class="text-[9px] sm:text-[11px] font-black ${isToday ? 'bg-indigo-600 dark:bg-indigo-500 text-white w-5 h-5 rounded-lg flex items-center justify-center shadow-md' : 'text-slate-400 dark:text-slate-500'}">
+                <div class="text-[9px] sm:text-[11px] font-black ${isToday ? 'bg-indigo-600 text-white w-5 h-5 rounded-lg flex items-center justify-center shadow-md' : 'text-slate-400 dark:text-slate-500'}">
                     ${day}
                 </div>
             </div>
@@ -848,5 +848,6 @@ yearSelect.onchange = processAndRender;
 
 // Launch
 initCalendar();
+
 
 

@@ -753,7 +753,7 @@ function renderCalendarUI(dailyPnL) {
     let monthlyTotal = 0;
 
     // Weekday Headers
-    ["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(day => {
+    ["S","M","T","W","T","F","S"].forEach(day => {
         const div = document.createElement("div");
         div.className = "text-center text-[13px] font-black text-slate-400 uppercase tracking-tighter mb-2";
         div.textContent = day;
@@ -848,6 +848,7 @@ yearSelect.onchange = processAndRender;
 
 // Launch
 initCalendar();
+
 
 
 

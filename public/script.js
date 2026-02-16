@@ -61,8 +61,6 @@ const resetDefaultsBtn = document.getElementById('reset-defaults-btn');
 
 // Load Data and Settings
 function init() {
-    
-    // Load History (if implemented later)
     const saved = localStorage.getItem('trading_calc_history_v2');
     if (saved) {
         calcHistory = JSON.parse(saved);
@@ -72,29 +70,33 @@ function init() {
     const savedSettings = localStorage.getItem('trading_calc_settings');
     if (savedSettings) {
         userSettings = JSON.parse(savedSettings);
+        if (userSettings.timeZone) {
+            currentSettingsModeTime = userSettings.timeZone;
+        }
     }
     
     // Update UI with loaded settings (e.g. default value text)
     updateSettingsUI();
-    updateModeUI(); // Also call this to set initial active states
+    updateModeUI(); 
     updateModeNewsUI();
-
+    updateSettingsModeButtonsUITime(); 
     if (inputPoints) {
         inputPoints.focus();
     }
 }
 
+
 function updateModeUI() {
     // ... existing updateModeUI logic for main calculator ...
-    const activeClass = "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]";
+    const activeClass = "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400";
     const inactiveClass = "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
 
     if (currentMode === 'SP1!') {
-        btnSP1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnNQ1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        btnSP1.className = `flex-1 py-4 px-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnNQ1.className = `flex-1 py-4 px-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
     } else {
-        btnNQ1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnSP1.className = `flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        btnNQ1.className = `flex-1 py-4 px-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnSP1.className = `flex-1 py-4 px-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
     }
     containerResult.classList.add('hidden');
 }
@@ -225,30 +227,51 @@ function updateSettingsModeButtonsUI() {
     const inactiveClass = "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
 
     if (currentSettingsMode === 'SP1!') {
-        btnEsSettings.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnNqSettings.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        btnEsSettings.className = `flex-1 py-4 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnNqSettings.className = `flex-1 py-4 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
         esNqFixedValueInput.value = userSettings.esFixedValue; // Sync input value
     } else {
-        btnNqSettings.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnEsSettings.className = `flex-1 py-3 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        btnNqSettings.className = `flex-1 py-4 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnEsSettings.className = `flex-1 py-4 px-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
         esNqFixedValueInput.value = userSettings.nqFixedValue; // Sync input value
     }
 }
 
+// Add this to your DOM Elements list at the top
+const saveTzBtn = document.getElementById('save-tz-btn');
+
+// Update the UI function to handle the active colors
 function updateSettingsModeButtonsUITime() {
     const activeClass = "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]";
     const inactiveClass = "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200";
+    const tzDisplay = document.getElementById('current-tz-display');
 
     if (currentSettingsModeTime === 'NY') {
-        btnNySettings.className = `flex-1 py-3 px-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnMySettings.className = `flex-1 py-3 px-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
-        // esNqFixedValueInput.value = userSettings.esFixedValue;
+        btnNySettings.className = `flex-1 py-4 px-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnMySettings.className = `flex-1 py-4 px-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        if(tzDisplay) tzDisplay.textContent = "NY (UTC-13)";
     } else {
-        btnMySettings.className = `flex-1 py-3 px-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
-        btnNySettings.className = `flex-1 py-3 px-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
-        // esNqFixedValueInput.value = userSettings.nqFixedValue;
+        btnMySettings.className = `flex-1 py-4 px-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${activeClass}`;
+        btnNySettings.className = `flex-1 py-4 px-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${inactiveClass}`;
+        if(tzDisplay) tzDisplay.textContent = "MY (UTC-12)";
     }
 }
+
+// Add the Save Button Logic
+saveTzBtn.addEventListener('click', () => {
+    // Save the current selection to your userSettings object
+    userSettings.timeZone = currentSettingsModeTime;
+    saveSettingsToLocalStorage();
+    
+    // Provide feedback
+    alert(`Time Zone preference (${currentSettingsModeTime}) saved!`);
+    
+    // Refresh News if visible
+    if (typeof renderTimes === "function") {
+        renderTimes();
+        renderEvents();
+    }
+});
 
 function updateModeUI() {
     // ... existing updateModeUI logic for main calculator ...
@@ -628,13 +651,15 @@ todoInput.addEventListener("input", () => {
 });
 
 function adjustTextareaHeight() {
-    const maxHeight = 300; // max height in pixels
-    todoInput.style.height = 'auto'; // reset height to recalc scrollHeight
-    const newHeight = Math.min(todoInput.scrollHeight, maxHeight);
+    const minHeight = 300; // This prevents the "shrink" at the start
+    todoInput.style.height = 'auto'; 
+    
+    // Set height to scrollHeight or the minimum of 300px
+    const newHeight = Math.max(todoInput.scrollHeight, minHeight);
     todoInput.style.height = newHeight + 'px';
     
-    // Optional: show scrollbar if max reached
-    if (todoInput.scrollHeight > maxHeight) {
+    // Only show scrollbar if the note gets very long
+    if (todoInput.scrollHeight > 600) {
         todoInput.style.overflowY = 'auto';
     } else {
         todoInput.style.overflowY = 'hidden';
@@ -851,5 +876,65 @@ initCalendar();
 
 
 
+const tabButtons = document.querySelectorAll('.tab-btn');
 
 
+
+function updateHeaderUI(activeSection) {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    
+    tabButtons.forEach(btn => {
+        const sectionName = btn.dataset.section;
+        const label = document.getElementById(`label-${sectionName}`);
+        const icon = btn.firstElementChild; 
+        const isActive = sectionName === activeSection;
+
+        if (isActive) {
+            // Active: Expand padding and show label
+            btn.classList.add('bg-white', 'dark:bg-slate-800', 'shadow-lg', 'scale-[1.02]', 'px-4');
+            btn.classList.remove('px-2.5'); // Remove tight padding
+            
+            label.classList.add('text-indigo-600', 'dark:text-indigo-400', 'max-w-[100px]', 'opacity-100', 'ml-2');
+            label.classList.remove('max-w-0', 'opacity-0');
+            
+            if (icon) icon.classList.remove('grayscale', 'opacity-50');
+        } else {
+            // Inactive: Shrink padding to minimize space
+            btn.classList.remove('bg-white', 'dark:bg-slate-800', 'shadow-lg', 'scale-[1.02]', 'px-4');
+            btn.classList.add('px-2.5'); // Add tight padding
+            
+            label.classList.add('max-w-0', 'opacity-0');
+            label.classList.remove('text-indigo-600', 'dark:text-indigo-400', 'max-w-[100px]', 'opacity-100', 'ml-2');
+            
+            if (icon) icon.classList.add('grayscale', 'opacity-50');
+        }
+    });
+}
+
+
+
+
+
+
+// Ensure you call this at the end of your script or inside init()
+updateHeaderUI('calculator');
+
+tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const sectionName = btn.dataset.section;
+
+        // Safely toggle content sections
+        ['calculator', 'news', 'notes', 'calendar'].forEach(name => {
+            const el = document.getElementById(`section-${name}`);
+            if (el) el.classList.add('hidden');
+        });
+
+        const target = document.getElementById(`section-${sectionName}`);
+        if (target) target.classList.remove('hidden');
+
+        updateHeaderUI(sectionName);
+    });
+});
+
+// Initial load
+updateHeaderUI('calculator');

@@ -651,20 +651,11 @@ todoInput.addEventListener("input", () => {
 });
 
 function adjustTextareaHeight() {
-    const minHeight = 300; // This prevents the "shrink" at the start
-    todoInput.style.height = 'auto'; 
-    
-    // Set height to scrollHeight or the minimum of 300px
-    const newHeight = Math.max(todoInput.scrollHeight, minHeight);
-    todoInput.style.height = newHeight + 'px';
-    
-    // Only show scrollbar if the note gets very long
-    if (todoInput.scrollHeight > 600) {
-        todoInput.style.overflowY = 'auto';
-    } else {
-        todoInput.style.overflowY = 'hidden';
-    }
+    todoInput.style.height = "auto"; // reset first
+    todoInput.style.height = todoInput.scrollHeight + "px"; // exact height of content
 }
+ 
+
 
 
 loadNoteLocal();
@@ -817,7 +808,7 @@ function renderCalendarUI(dailyPnL) {
         
         div.innerHTML = `
             <div class="flex justify-center pt-2">
-                <div class="text-[9px] sm:text-[11px] font-black ${isToday ? 'bg-indigo-600 text-white w-5 h-5 rounded-lg flex items-center justify-center shadow-md' : 'text-slate-400 dark:text-slate-500'}">
+                <div class="text-[9px] sm:text-[11px] font-black ${isToday ? 'bg-indigo-600 text-white w-5 h-5 rounded-2xl flex items-center justify-center shadow-md' : 'text-slate-400 dark:text-slate-500'}">
                     ${day}
                 </div>
             </div>
@@ -932,6 +923,12 @@ tabButtons.forEach(btn => {
         const target = document.getElementById(`section-${sectionName}`);
         if (target) target.classList.remove('hidden');
 
+        if (sectionName === 'notes') {
+            setTimeout(() => {
+                adjustTextareaHeight();
+            }, 0);
+        }
+        
         updateHeaderUI(sectionName);
     });
 });

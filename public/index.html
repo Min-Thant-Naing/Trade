@@ -19,8 +19,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 
-<body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors duration-300">
-    <div id="root" class="flex flex-col items-center justify-start min-h-screen p-4 md:p-8 space-y-8">
+<body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
+    <div id="root" class="flex flex-col items-center justify-start p-4 md:p-8 space-y-8">
        <header class="w-full flex items-center justify-between py-4 max-w-md mx-auto mb-4 md:mb-6">
             <div id="section-tabs" class="flex items-center gap-1 bg-slate-50 dark:bg-slate-950 p-1 rounded-2xl border-2 border-slate-200 dark:border-white/5 shadow-sm overflow-hidden">
                 
@@ -128,11 +128,20 @@
               </section>  
             </div>
 
-            <div id="section-notes" class="hidden"> 
-              <section class="bg-slate-100 dark:bg-slate-950 rounded-3xl w-full p-5 border-4 border-slate-200 dark:border-white/5">
-                  <textarea id="todo-input" placeholder="Write your notes here..." class="w-full p-4 transition-all outline-none bg-slate-100 dark:bg-slate-950 resize-none overflow-hidden text-slate-600 dark:text-slate-300"></textarea>
-              </section>              
-            </div>
+<div id="section-notes" class="hidden w-full">
+    <section
+        class="bg-slate-100 dark:bg-slate-950 rounded-3xl w-full p-5 border-4 border-slate-200 dark:border-white/5 overflow-visible">
+        
+        <textarea
+            id="todo-input"
+            placeholder="Write your notes here..."
+            class="w-full p-4 resize-none outline-none bg-transparent text-slate-600 dark:text-slate-300 block"
+        ></textarea>
+
+    </section>
+</div>
+
+
 
 
             <div id="section-calendar" class="hidden">

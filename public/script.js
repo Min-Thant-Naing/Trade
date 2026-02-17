@@ -46,13 +46,11 @@ const closeSettingsBtn = document.getElementById('close-settings-btn');
 
 // Settings Inputs and Buttons
 const riskAmountInput = document.getElementById('risk-amount-input');
-const saveRiskBtn = document.getElementById('save-risk-btn');
 const esNqFixedValueInput = document.getElementById('es-nq-fixed-value-input');
 const btnEsSettings = document.getElementById('btn-es-settings');
 const btnNqSettings = document.getElementById('btn-nq-settings');
 const btnNySettings = document.getElementById('btn-ny-settings');
 const btnMySettings = document.getElementById('btn-my-settings');
-const saveFixedBtn = document.getElementById('save-fixed-btn');
 const resetDefaultsBtn = document.getElementById('reset-defaults-btn');
 
 
@@ -189,34 +187,6 @@ function saveSettingsToLocalStorage() {
     localStorage.setItem('trading_calc_settings', JSON.stringify(userSettings));
 }
 
-function handleSaveRisk() {
-    const newRisk = parseFloat(riskAmountInput.value);
-    if (!isNaN(newRisk) && newRisk > 0) {
-        userSettings.riskAmount = newRisk;
-        saveSettingsToLocalStorage();
-        updateSettingsUI();
-        alert("Risk amount saved!");
-    } else {
-        alert("Please enter a valid risk amount.");
-    }
-}
-
-function handleSaveFixed() {
-    const newValue = parseFloat(esNqFixedValueInput.value);
-    if (!isNaN(newValue) && newValue > 0) {
-        if (currentSettingsMode === 'SP1!') {
-            userSettings.esFixedValue = newValue;
-            alert("ES fixed value saved!");
-        } else {
-            userSettings.nqFixedValue = newValue;
-            alert("NQ fixed value saved!");
-        }
-        saveSettingsToLocalStorage();
-        updateSettingsUI();
-    } else {
-        alert("Please enter a valid fixed value.");
-    }
-}
 
 // Function to manage the visual active state of the ES/NQ buttons in the settings panel
 function updateSettingsModeButtonsUI() {
@@ -237,9 +207,6 @@ function updateSettingsModeButtonsUI() {
     }
 }
 
-// Add this to your DOM Elements list at the top
-const saveTzBtn = document.getElementById('save-tz-btn');
-
 // Update the UI function to handle the active colors
 function updateSettingsModeButtonsUITime() {
     const activeClass = "bg-white dark:bg-slate-800 shadow-lg text-indigo-600 dark:text-indigo-400 scale-[1.02]";
@@ -256,22 +223,6 @@ function updateSettingsModeButtonsUITime() {
         if(tzDisplay) tzDisplay.textContent = "MY (UTC-12)";
     }
 }
-
-// Add the Save Button Logic
-saveTzBtn.addEventListener('click', () => {
-    // Save the current selection to your userSettings object
-    userSettings.timeZone = currentSettingsModeTime;
-    saveSettingsToLocalStorage();
-    
-    // Provide feedback
-    alert(`Time Zone preference (${currentSettingsModeTime}) saved!`);
-    
-    // Refresh News if visible
-    if (typeof renderTimes === "function") {
-        renderTimes();
-        renderEvents();
-    }
-});
 
 function updateModeUI() {
     // ... existing updateModeUI logic for main calculator ...
@@ -290,14 +241,28 @@ function updateModeUI() {
 
 
 function handleResetDefaults() {
-    if (confirm("Are you sure you want to reset all settings to factory defaults?")) {
-        userSettings = { ...defaultSettings };
-        saveSettingsToLocalStorage();
-        updateSettingsUI();
-        closeSettingsModal();
-        alert("All settings reset to defaults.");
-    }
+    userSettings = { ...defaultSettings };
+    saveSettingsToLocalStorage();
+    updateSettingsUI();
+    closeSettingsModal();
+    showToast("Settings reset to default");
 }
+
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+
+    // show
+    toast.classList.remove('opacity-0', 'translate-y-10');
+    toast.classList.add('opacity-100', 'translate-y-0');
+
+    // auto hide after 2s
+    setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-10');
+    }, 2000);
+}
+
 
 
 // Event Listeners (Main UI)
@@ -367,8 +332,6 @@ btnCopy.addEventListener('click', () => {
 // Event Listeners (Settings Modal)
 openSettingsBtn.addEventListener('click', openSettingsModal);
 closeSettingsBtn.addEventListener('click', closeSettingsModal);
-saveRiskBtn.addEventListener('click', handleSaveRisk);
-saveFixedBtn.addEventListener('click', handleSaveFixed);
 resetDefaultsBtn.addEventListener('click', handleResetDefaults);
 
 // Listeners for the ES/NQ switch within the settings panel
@@ -399,23 +362,40 @@ function convertTimeBetweenZones(timeStr, fromZone, toZone) {
 }
 
 // Listeners for the MY/NY switch within the settings panel
+
 btnNySettings.addEventListener('click', () => {
-    if (currentSettingsModeTime === 'MY') {
-        activeTime = convertTimeBetweenZones(activeTime, 'MY', 'NY');
+    if (currentSettingsModeTime !== 'NY') {
+        currentSettingsModeTime = 'NY';
+        userSettings.timeZone = 'NY';
+        saveSettingsToLocalStorage();
+
+        if (activeTime) {
+            activeTime = convertTimeBetweenZones(activeTime, 'MY', 'NY');
+        }
+
+        updateSettingsModeButtonsUITime();
+        renderTimes();
+        renderEvents();
     }
-    currentSettingsModeTime = 'NY';
-    updateSettingsModeButtonsUITime();
-    renderTimes();
 });
 
 btnMySettings.addEventListener('click', () => {
-    if (currentSettingsModeTime === 'NY') {
-        activeTime = convertTimeBetweenZones(activeTime, 'NY', 'MY');
+    if (currentSettingsModeTime !== 'MY') {
+        currentSettingsModeTime = 'MY';
+        userSettings.timeZone = 'MY';
+        saveSettingsToLocalStorage();
+
+        if (activeTime) {
+            activeTime = convertTimeBetweenZones(activeTime, 'NY', 'MY');
+        }
+
+        updateSettingsModeButtonsUITime();
+        renderTimes();
+        renderEvents();
     }
-    currentSettingsModeTime = 'MY';
-    updateSettingsModeButtonsUITime();
-    renderTimes();
 });
+
+
 
 
 // Close modal if user clicks outside of the content area
@@ -655,6 +635,7 @@ function adjustTextareaHeight() {
     todoInput.style.height = todoInput.scrollHeight + "px"; // exact height of content
 }
  
+
 
 
 
@@ -935,3 +916,41 @@ tabButtons.forEach(btn => {
 
 // Initial load
 updateHeaderUI('calculator');
+
+
+
+riskAmountInput.addEventListener('input', () => {
+    const val = parseFloat(riskAmountInput.value);
+    if (!isNaN(val)) {
+        userSettings.riskAmount = val;
+        saveSettingsToLocalStorage();
+    }
+});
+
+esNqFixedValueInput.addEventListener('input', () => {
+    const val = parseFloat(esNqFixedValueInput.value);
+    if (!isNaN(val)) {
+        if (currentSettingsMode === 'SP1!') {
+            userSettings.esFixedValue = val;
+        } else {
+            userSettings.nqFixedValue = val;
+        }
+        saveSettingsToLocalStorage();
+    }
+});
+
+btnEsSettings.addEventListener('click', () => {
+    currentSettingsMode = 'SP1!';
+    updateSettingsModeButtonsUI();
+    esNqFixedValueInput.value = userSettings.esFixedValue; // sync input
+    saveSettingsToLocalStorage(); // auto-save
+});
+
+btnNqSettings.addEventListener('click', () => {
+    currentSettingsMode = 'NQ1!';
+    updateSettingsModeButtonsUI();
+    esNqFixedValueInput.value = userSettings.nqFixedValue; // sync input
+    saveSettingsToLocalStorage(); // auto-save
+});
+
+

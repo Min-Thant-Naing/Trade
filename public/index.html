@@ -64,13 +64,22 @@
                           </button>
                       </div>
                       <div class="space-y-3">
-                          <label for="points" class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 ml-1">
-                              Input Stop Loss
-                          </label>
-                          <div class="relative group">
-                              <input id="points" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-transparent rounded-2xl py-5 px-6 text-3xl font-black text-slate-900 dark:text-white focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none tabular-nums">
-                              
-                          </div>
+                            <div class="flex items-center justify-between mb-3 px-1">
+                                <label for="points" 
+                                    class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                                    Input Stop Loss
+                                </label>
+
+                                <span id="risk-amount-display"
+                                    class="px-3 py-2 rounded-xl text-xs font-black tabular-nums transition-all duration-200">
+                                    0
+                                </span>
+                            </div>
+
+                            <div class="relative group">
+                                <input id="points" type="number" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-transparent rounded-2xl py-5 px-6 text-3xl font-black text-slate-900 dark:text-white focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none tabular-nums">
+                                
+                            </div>
                       </div>
                       <button id="calculate-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-black uppercase tracking-widest py-5 rounded-2xl shadow-xl shadow-indigo-600/30 transition-all active:scale-95 disabled:opacity-30">
                           Calculate Lot

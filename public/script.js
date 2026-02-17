@@ -37,6 +37,8 @@ const textCopy = document.getElementById('copy-text');
 const arrowLeft = document.getElementById('time-prev');
 const arrowRight = document.getElementById('time-next');
 const todoInput = document.getElementById("todo-input");
+const riskAmountDisplay = document.getElementById('risk-amount-display');
+
 
 // Settings Modal DOM Elements (New)
 const settingsModal = document.getElementById('settings-modal');
@@ -55,6 +57,18 @@ const resetDefaultsBtn = document.getElementById('reset-defaults-btn');
 
 
 
+function updateRiskDisplay() {
+    if (!riskAmountDisplay) return;
+
+    riskAmountDisplay.textContent = `risk: $${userSettings.riskAmount}`;
+
+    // Optional styling based on value
+    riskAmountDisplay.className =
+        "px-3 py-2 rounded-xl text-xs font-black tabular-nums transition-all duration-200 " +
+        (userSettings.riskAmount > 0
+            ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+            : "bg-slate-100 text-slate-400 dark:bg-slate-800");
+}
 
 
 // Load Data and Settings
@@ -75,6 +89,7 @@ function init() {
     
     // Update UI with loaded settings (e.g. default value text)
     updateSettingsUI();
+    updateRiskDisplay();
     updateModeUI(); 
     updateModeNewsUI();
     updateSettingsModeButtonsUITime(); 
@@ -244,9 +259,11 @@ function handleResetDefaults() {
     userSettings = { ...defaultSettings };
     saveSettingsToLocalStorage();
     updateSettingsUI();
+    updateRiskDisplay(); 
     closeSettingsModal();
     showToast("Settings reset to default");
 }
+
 
 function showToast(message) {
     const toast = document.getElementById('toast');
@@ -924,8 +941,10 @@ riskAmountInput.addEventListener('input', () => {
     if (!isNaN(val)) {
         userSettings.riskAmount = val;
         saveSettingsToLocalStorage();
+        updateRiskDisplay(); 
     }
 });
+
 
 esNqFixedValueInput.addEventListener('input', () => {
     const val = parseFloat(esNqFixedValueInput.value);
@@ -952,5 +971,3 @@ btnNqSettings.addEventListener('click', () => {
     esNqFixedValueInput.value = userSettings.nqFixedValue; // sync input
     saveSettingsToLocalStorage(); // auto-save
 });
-
-

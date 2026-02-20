@@ -729,7 +729,7 @@ function processAndRender() {
     setTimeout(() => {
         const entryPrices = {};
         const dailyPnL = {};
-
+        
         tradeData.forEach(t => {
             if (t[15] === "true") entryPrices[t[16]] = parseFloat(t[8]);
         });
@@ -790,40 +790,40 @@ function renderCalendarUI(dailyPnL) {
         const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
         
         // Dynamic Tailwind Classes based on PnL
-        let cardClass = "relative w-full aspect-square rounded-xl border transition-all duration-200 flex flex-col items-center justify-center overflow-hidden";
+let cardClass = "relative w-full min-h-[58px] sm:min-h-[70px] py-2 aspect-square rounded-xl  border transition-all duration-200 flex flex-col items-center justify-between overflow-hidden";
 
         if (pnl > 0) {
             cardClass += " bg-emerald-500/10 border-emerald-500/30 dark:border-emerald-500/20";
         } else if (pnl < 0) {
             cardClass += " bg-rose-500/10 border-rose-500/30 dark:border-rose-500/20";
         } else {
-            // MATCH THE SECTION BACKGROUND EXACTLY
             cardClass += " bg-slate-50 dark:bg-slate-800/50 border-transparent";
         }
 
         const div = document.createElement("div");
         div.className = cardClass;
         
-        div.innerHTML = `
-            <div class="flex justify-center pt-2">
-                <div class="text-[9px] sm:text-[11px] font-black ${isToday ? 'bg-indigo-600 text-white w-5 h-5 rounded-2xl flex items-center justify-center shadow-md' : 'text-slate-400 dark:text-slate-500'}">
-                    ${day}
-                </div>
-            </div>
+div.innerHTML = `
+    <div class="flex items-center justify-center w-full h-7">
+        <div class="text-[10px] sm:text-[11px] ${
+            isToday 
+            ? 'bg-indigo-600 text-white w-5 h-5 rounded-full flex items-center justify-center' 
+            : 'text-slate-400 dark:text-slate-500'
+        }">
+            ${day}
+        </div>
+    </div>
 
-            <!-- PnL: Remains in the vertical center of the card -->
-            <div class="flex-1 flex items-center justify-center pb-1 ">
-                ${pnl !== 0 ? `
-                    <div class="text-[7px] sm:text-[8px] font-black tracking-tight 
-                    ${pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}">
-                        ${pnl >= 0 ? '+$' : '-$'}${Math.abs(pnl).toFixed(2)}
-                    </div>
-                ` : ''}
-            </div>
-        `;
+    <div class="flex items-end justify-center w-full h-5">
+        <div class="text-[10px] sm:text-[11px] font-bold tracking-tight ${pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}">
+            ${pnl !== 0 ? '$' + Math.abs(pnl).toFixed(0) : ''}
+        </div>
+    </div>
+`;
+
+        
         calendarGrid.appendChild(div);
     }
-
     // Update Summary Header
     updateTotalUI(monthlyTotal);
 }

@@ -572,18 +572,30 @@ function renderEvents() {
     const filteredEvents = getFilteredEvents();
     container.innerHTML = filteredEvents
         .filter(ev => getLocalTimeOnly(ev) === activeTime)
-        .map(ev => {
-        let impactClass = "bg-yellow-400 dark:bg-yellow-600"; // default low impact
-        if (ev.impact === "Medium") impactClass = "bg-orange-400 dark:bg-orange-600";
-        else if (ev.impact === "High") impactClass = "bg-red-500 dark:bg-red-600";
+.map(ev => {
+            let impactText;
+
+            // Logic for dot background and text color
+            if (ev.impact === "High") {
+                impactText = "text-red-500";
+            } else if (ev.impact === "Medium") {
+                impactText = "text-yellow-500";
+            } else {
+                impactText = "text-slate-500";
+            }
+
             return `
-                <div class="flex items-center gap-3 py-3 text-xs text-slate-400 dark:text-slate-400 font-semibold">
-                    <span class="w-2 h-2 rounded-full inline-block border  border-slate-200 dark:border-transparent ${impactClass}"></span>
+                <div class="flex items-center gap-3 py-3 text-xs text-slate-400 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-white/5 last:border-0">
                     <span class="flex-1">${ev.title}</span>
+                    <span class="text-[9px] font-black uppercase tracking-wider ${impactText}">
+                        ${ev.impact}
+                    </span>
                 </div>                
             `;
         }).join("");
 }
+
+
 // --- LOAD EVENTS ---
 async function loadEvents() {
     try {
